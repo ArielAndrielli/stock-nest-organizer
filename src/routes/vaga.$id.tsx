@@ -175,7 +175,9 @@ function VagaDetail() {
       <main className="mx-auto grid max-w-6xl gap-6 px-6 py-8 lg:grid-cols-[380px_1fr]">
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Adicionar sub-item</CardTitle>
+            <CardTitle className="text-base">
+              {editingId ? "Editar sub-item" : "Adicionar sub-item"}
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={submit} className="space-y-4">
@@ -251,9 +253,24 @@ function VagaDetail() {
                   maxLength={300}
                 />
               </div>
-              <Button type="submit" className="w-full">
-                <Plus className="mr-2 h-4 w-4" /> Adicionar item
-              </Button>
+              <div className="flex gap-2">
+                <Button type="submit" className="flex-1">
+                  {editingId ? (
+                    <>
+                      <Pencil className="mr-2 h-4 w-4" /> Salvar alterações
+                    </>
+                  ) : (
+                    <>
+                      <Plus className="mr-2 h-4 w-4" /> Adicionar item
+                    </>
+                  )}
+                </Button>
+                {editingId && (
+                  <Button type="button" variant="outline" onClick={cancelEdit}>
+                    Cancelar
+                  </Button>
+                )}
+              </div>
             </form>
             {vaga.observacoes && (
               <div className="mt-6 rounded-md border bg-muted/40 p-3">
