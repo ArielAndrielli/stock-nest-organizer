@@ -326,17 +326,27 @@ function VagaDetail() {
                           {s.quantidade}
                         </Badge>
                       </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="w-full"
-                        onClick={() => {
-                          removeSubItem(vaga.id, s.id);
-                          toast.success("Item removido.");
-                        }}
-                      >
-                        <Trash2 className="mr-2 h-4 w-4" /> Remover
-                      </Button>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="flex-1"
+                          onClick={() => startEdit(s.id)}
+                        >
+                          <Pencil className="mr-2 h-4 w-4" /> Editar
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="flex-1"
+                          onClick={() => {
+                            removeSubItem(vaga.id, s.id);
+                            toast.success("Item removido.");
+                          }}
+                        >
+                          <Trash2 className="mr-2 h-4 w-4" /> Remover
+                        </Button>
+                      </div>
                     </CardContent>
                   </Card>
                 ))}
