@@ -40,6 +40,7 @@ export const Route = createFileRoute("/")({
 
 function Index() {
   const { vagas, hydrated, addVaga, removeVaga } = useVagas();
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [codigo, setCodigo] = useState("");
   const [setor, setSetor] = useState("");
