@@ -5,6 +5,7 @@ export type SubItem = {
   nome: string;
   quantidade: number;
   descricao?: string;
+  imagem?: string;
   criadoEm: number;
 };
 
