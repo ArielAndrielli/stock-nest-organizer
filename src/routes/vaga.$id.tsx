@@ -34,13 +34,14 @@ function fileToDataUrl(file: File): Promise<string> {
 
 function VagaDetail() {
   const { id } = Route.useParams();
-  const { vaga, hydrated, addSubItem, removeSubItem, removeVaga } = useVaga(id);
+  const { vaga, hydrated, addSubItem, removeSubItem, updateSubItem, removeVaga } = useVaga(id);
   const navigate = useNavigate();
 
   const [nome, setNome] = useState("");
   const [quantidade, setQuantidade] = useState("");
   const [descricao, setDescricao] = useState("");
   const [imagem, setImagem] = useState<string | undefined>(undefined);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   if (hydrated && !vaga) {
