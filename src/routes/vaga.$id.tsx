@@ -1,20 +1,12 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
-import { ArrowLeft, Package, Plus, Trash2 } from "lucide-react";
+import { useRef, useState } from "react";
+import { ArrowLeft, ImagePlus, Package, Plus, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { toast } from "sonner";
 import { useVaga } from "@/lib/vagas-store";
 
@@ -29,6 +21,17 @@ export const Route = createFileRoute("/vaga/$id")({
   component: VagaDetail,
 });
 
+const MAX_IMAGE_BYTES = 2 * 1024 * 1024;
+
+function fileToDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result));
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(file);
+  });
+}
+
 function VagaDetail() {
   const { id } = Route.useParams();
   const { vaga, hydrated, addSubItem, removeSubItem, removeVaga } = useVaga(id);
@@ -37,6 +40,8 @@ function VagaDetail() {
   const [nome, setNome] = useState("");
   const [quantidade, setQuantidade] = useState("");
   const [descricao, setDescricao] = useState("");
+  const [imagem, setImagem] = useState<string | undefined>(undefined);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   if (hydrated && !vaga) {
     return (
@@ -55,6 +60,25 @@ function VagaDetail() {
 
   const total = vaga.subItens.reduce((s, i) => s + i.quantidade, 0);
 
+  const onFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      toast.error("Selecione um arquivo de imagem.");
+      return;
+    }
+    if (file.size > MAX_IMAGE_BYTES) {
+      toast.error("Imagem muito grande (máx. 2MB).");
+      return;
+    }
+    try {
+      const url = await fileToDataUrl(file);
+      setImagem(url);
+    } catch {
+      toast.error("Falha ao ler a imagem.");
+    }
+  };
+
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!nome.trim()) {
@@ -70,11 +94,14 @@ function VagaDetail() {
       nome: nome.trim(),
       quantidade: qtd,
       descricao: descricao.trim() || undefined,
+      imagem,
     });
     toast.success("Item adicionado.");
     setNome("");
     setQuantidade("");
     setDescricao("");
+    setImagem(undefined);
+    if (fileRef.current) fileRef.current.value = "";
   };
 
   return (
@@ -120,6 +147,47 @@ function VagaDetail() {
           </CardHeader>
           <CardContent>
             <form onSubmit={submit} className="space-y-4">
+              <div className="space-y-1.5">
+                <Label>Imagem (capa)</Label>
+                {imagem ? (
+                  <div className="relative overflow-hidden rounded-md border">
+                    <img
+                      src={imagem}
+                      alt="Prévia"
+                      className="aspect-[16/9] w-full object-cover"
+                    />
+                    <Button
+                      type="button"
+                      size="icon"
+                      variant="secondary"
+                      className="absolute right-2 top-2 h-7 w-7"
+                      onClick={() => {
+                        setImagem(undefined);
+                        if (fileRef.current) fileRef.current.value = "";
+                      }}
+                      aria-label="Remover imagem"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => fileRef.current?.click()}
+                    className="flex aspect-[16/9] w-full flex-col items-center justify-center gap-1 rounded-md border border-dashed bg-muted/30 text-sm text-muted-foreground transition hover:bg-muted/60"
+                  >
+                    <ImagePlus className="h-5 w-5" />
+                    Selecionar imagem
+                  </button>
+                )}
+                <input
+                  ref={fileRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={onFile}
+                />
+              </div>
               <div className="space-y-1.5">
                 <Label htmlFor="nome">Nome do item *</Label>
                 <Input
@@ -179,41 +247,51 @@ function VagaDetail() {
                 </p>
               </div>
             ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Item</TableHead>
-                    <TableHead className="w-24 text-right">Qtd</TableHead>
-                    <TableHead className="w-12" />
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {vaga.subItens.map((s) => (
-                    <TableRow key={s.id}>
-                      <TableCell>
-                        <div className="font-medium">{s.nome}</div>
-                        {s.descricao && (
-                          <div className="text-xs text-muted-foreground">{s.descricao}</div>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-right font-mono">{s.quantidade}</TableCell>
-                      <TableCell>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => {
-                            removeSubItem(vaga.id, s.id);
-                            toast.success("Item removido.");
-                          }}
-                          aria-label="Remover item"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                {vaga.subItens.map((s) => (
+                  <Card key={s.id} className="overflow-hidden">
+                    {s.imagem ? (
+                      <div className="aspect-[16/9] w-full overflow-hidden bg-muted">
+                        <img
+                          src={s.imagem}
+                          alt={s.nome}
+                          className="h-full w-full object-cover"
+                        />
+                      </div>
+                    ) : (
+                      <div className="flex aspect-[16/9] w-full items-center justify-center bg-muted">
+                        <Package className="h-6 w-6 text-muted-foreground" />
+                      </div>
+                    )}
+                    <CardContent className="space-y-2 p-4">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0">
+                          <p className="truncate font-medium">{s.nome}</p>
+                          {s.descricao && (
+                            <p className="line-clamp-2 text-xs text-muted-foreground">
+                              {s.descricao}
+                            </p>
+                          )}
+                        </div>
+                        <Badge variant="secondary" className="font-mono">
+                          {s.quantidade}
+                        </Badge>
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full"
+                        onClick={() => {
+                          removeSubItem(vaga.id, s.id);
+                          toast.success("Item removido.");
+                        }}
+                      >
+                        <Trash2 className="mr-2 h-4 w-4" /> Remover
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
             )}
           </CardContent>
         </Card>
