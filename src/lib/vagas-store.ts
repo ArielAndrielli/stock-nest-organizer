@@ -90,7 +90,33 @@ export function useVagas() {
     );
   }, []);
 
-  return { vagas, hydrated, addVaga, removeVaga, updateVaga, addSubItem, removeSubItem };
+  const updateSubItem = useCallback(
+    (vagaId: string, subId: string, patch: Omit<SubItem, "id" | "criadoEm">) => {
+      writeStorage(
+        readStorage().map((v) =>
+          v.id === vagaId
+            ? {
+                ...v,
+                subItens: v.subItens.map((s) =>
+                  s.id === subId
+                    ? {
+                        ...s,
+                        nome: patch.nome,
+                        quantidade: patch.quantidade,
+                        descricao: patch.descricao,
+                        imagem: patch.imagem,
+                      }
+                    : s,
+                ),
+              }
+            : v,
+        ),
+      );
+    },
+    [],
+  );
+
+  return { vagas, hydrated, addVaga, removeVaga, updateVaga, addSubItem, removeSubItem, updateSubItem };
 }
 
 export function useVaga(id: string) {

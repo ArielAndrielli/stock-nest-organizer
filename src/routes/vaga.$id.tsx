@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useRef, useState } from "react";
-import { ArrowLeft, ImagePlus, Package, Plus, Trash2, X } from "lucide-react";
+import { ArrowLeft, ImagePlus, Package, Pencil, Plus, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -34,13 +34,14 @@ function fileToDataUrl(file: File): Promise<string> {
 
 function VagaDetail() {
   const { id } = Route.useParams();
-  const { vaga, hydrated, addSubItem, removeSubItem, removeVaga } = useVaga(id);
+  const { vaga, hydrated, addSubItem, removeSubItem, updateSubItem, removeVaga } = useVaga(id);
   const navigate = useNavigate();
 
   const [nome, setNome] = useState("");
   const [quantidade, setQuantidade] = useState("");
   const [descricao, setDescricao] = useState("");
   const [imagem, setImagem] = useState<string | undefined>(undefined);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   if (hydrated && !vaga) {
@@ -79,6 +80,31 @@ function VagaDetail() {
     }
   };
 
+  const resetForm = () => {
+    setNome("");
+    setQuantidade("");
+    setDescricao("");
+    setImagem(undefined);
+    setEditingId(null);
+    if (fileRef.current) fileRef.current.value = "";
+  };
+
+  const startEdit = (subId: string) => {
+    const s = vaga.subItens.find((x) => x.id === subId);
+    if (!s) return;
+    setNome(s.nome);
+    setQuantidade(String(s.quantidade));
+    setDescricao(s.descricao || "");
+    setImagem(s.imagem);
+    setEditingId(subId);
+    toast.info("Editando item.");
+  };
+
+  const cancelEdit = () => {
+    resetForm();
+    toast.info("Edição cancelada.");
+  };
+
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!nome.trim()) {
@@ -90,18 +116,24 @@ function VagaDetail() {
       toast.error("Quantidade inválida.");
       return;
     }
-    addSubItem(vaga.id, {
-      nome: nome.trim(),
-      quantidade: qtd,
-      descricao: descricao.trim() || undefined,
-      imagem,
-    });
-    toast.success("Item adicionado.");
-    setNome("");
-    setQuantidade("");
-    setDescricao("");
-    setImagem(undefined);
-    if (fileRef.current) fileRef.current.value = "";
+    if (editingId) {
+      updateSubItem(vaga.id, editingId, {
+        nome: nome.trim(),
+        quantidade: qtd,
+        descricao: descricao.trim() || undefined,
+        imagem,
+      });
+      toast.success("Item atualizado.");
+    } else {
+      addSubItem(vaga.id, {
+        nome: nome.trim(),
+        quantidade: qtd,
+        descricao: descricao.trim() || undefined,
+        imagem,
+      });
+      toast.success("Item adicionado.");
+    }
+    resetForm();
   };
 
   return (
@@ -143,7 +175,9 @@ function VagaDetail() {
       <main className="mx-auto grid max-w-6xl gap-6 px-6 py-8 lg:grid-cols-[380px_1fr]">
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Adicionar sub-item</CardTitle>
+            <CardTitle className="text-base">
+              {editingId ? "Editar sub-item" : "Adicionar sub-item"}
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={submit} className="space-y-4">
@@ -219,9 +253,24 @@ function VagaDetail() {
                   maxLength={300}
                 />
               </div>
-              <Button type="submit" className="w-full">
-                <Plus className="mr-2 h-4 w-4" /> Adicionar item
-              </Button>
+              <div className="flex gap-2">
+                <Button type="submit" className="flex-1">
+                  {editingId ? (
+                    <>
+                      <Pencil className="mr-2 h-4 w-4" /> Salvar alterações
+                    </>
+                  ) : (
+                    <>
+                      <Plus className="mr-2 h-4 w-4" /> Adicionar item
+                    </>
+                  )}
+                </Button>
+                {editingId && (
+                  <Button type="button" variant="outline" onClick={cancelEdit}>
+                    Cancelar
+                  </Button>
+                )}
+              </div>
             </form>
             {vaga.observacoes && (
               <div className="mt-6 rounded-md border bg-muted/40 p-3">
@@ -277,17 +326,27 @@ function VagaDetail() {
                           {s.quantidade}
                         </Badge>
                       </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="w-full"
-                        onClick={() => {
-                          removeSubItem(vaga.id, s.id);
-                          toast.success("Item removido.");
-                        }}
-                      >
-                        <Trash2 className="mr-2 h-4 w-4" /> Remover
-                      </Button>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="flex-1"
+                          onClick={() => startEdit(s.id)}
+                        >
+                          <Pencil className="mr-2 h-4 w-4" /> Editar
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="flex-1"
+                          onClick={() => {
+                            removeSubItem(vaga.id, s.id);
+                            toast.success("Item removido.");
+                          }}
+                        >
+                          <Trash2 className="mr-2 h-4 w-4" /> Remover
+                        </Button>
+                      </div>
                     </CardContent>
                   </Card>
                 ))}
