@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
-import { Boxes, Package, Plus, Trash2, ArrowRight } from "lucide-react";
+import { useMemo, useState } from "react";
+import { Boxes, Package, Plus, Trash2, ArrowRight, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -45,6 +45,7 @@ function Index() {
   const [setor, setSetor] = useState("");
   const [capacidade, setCapacidade] = useState("");
   const [observacoes, setObservacoes] = useState("");
+  const [query, setQuery] = useState("");
 
   const reset = () => {
     setCodigo("");
@@ -74,6 +75,16 @@ function Index() {
     reset();
     setOpen(false);
   };
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return vagas;
+    return vagas.filter(
+      (v) =>
+        v.codigo.toLowerCase().includes(q) ||
+        v.setor.toLowerCase().includes(q),
+    );
+  }, [vagas, query]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -162,6 +173,25 @@ function Index() {
       </header>
 
       <main className="mx-auto max-w-6xl px-6 py-8">
+        <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 className="text-xl font-semibold">Vagas cadastradas</h2>
+            <p className="text-sm text-muted-foreground">
+              {vagas.length} {vagas.length === 1 ? "vaga" : "vagas"} no total
+              {query && ` · ${filtered.length} encontradas`}
+            </p>
+          </div>
+          <div className="relative w-full sm:w-80">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder="Buscar por código ou setor..."
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              className="pl-9"
+            />
+          </div>
+        </div>
+
         {hydrated && vagas.length === 0 ? (
           <Card className="border-dashed">
             <CardContent className="flex flex-col items-center justify-center gap-3 py-16 text-center">
@@ -179,12 +209,36 @@ function Index() {
               </Button>
             </CardContent>
           </Card>
+        ) : hydrated && filtered.length === 0 ? (
+          <Card className="border-dashed">
+            <CardContent className="flex flex-col items-center justify-center gap-2 py-12 text-center">
+              <Search className="h-6 w-6 text-muted-foreground" />
+              <p className="font-medium">Nenhuma vaga encontrada</p>
+              <p className="text-sm text-muted-foreground">
+                Tente outro código ou setor.
+              </p>
+            </CardContent>
+          </Card>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {vagas.map((v) => {
+            {filtered.map((v) => {
               const total = v.subItens.reduce((s, i) => s + i.quantidade, 0);
+              const capa = v.subItens.find((s) => s.imagem)?.imagem;
               return (
-                <Card key={v.id} className="flex flex-col">
+                <Card key={v.id} className="flex flex-col overflow-hidden">
+                  {capa ? (
+                    <div className="aspect-[16/9] w-full overflow-hidden bg-muted">
+                      <img
+                        src={capa}
+                        alt={`Capa da vaga ${v.codigo}`}
+                        className="h-full w-full object-cover"
+                      />
+                    </div>
+                  ) : (
+                    <div className="flex aspect-[16/9] w-full items-center justify-center bg-muted">
+                      <Package className="h-8 w-8 text-muted-foreground" />
+                    </div>
+                  )}
                   <CardHeader>
                     <div className="flex items-start justify-between gap-2">
                       <div>
