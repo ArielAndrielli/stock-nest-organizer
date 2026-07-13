@@ -80,6 +80,31 @@ function VagaDetail() {
     }
   };
 
+  const resetForm = () => {
+    setNome("");
+    setQuantidade("");
+    setDescricao("");
+    setImagem(undefined);
+    setEditingId(null);
+    if (fileRef.current) fileRef.current.value = "";
+  };
+
+  const startEdit = (subId: string) => {
+    const s = vaga.subItens.find((x) => x.id === subId);
+    if (!s) return;
+    setNome(s.nome);
+    setQuantidade(String(s.quantidade));
+    setDescricao(s.descricao || "");
+    setImagem(s.imagem);
+    setEditingId(subId);
+    toast.info("Editando item.");
+  };
+
+  const cancelEdit = () => {
+    resetForm();
+    toast.info("Edição cancelada.");
+  };
+
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!nome.trim()) {
@@ -91,18 +116,24 @@ function VagaDetail() {
       toast.error("Quantidade inválida.");
       return;
     }
-    addSubItem(vaga.id, {
-      nome: nome.trim(),
-      quantidade: qtd,
-      descricao: descricao.trim() || undefined,
-      imagem,
-    });
-    toast.success("Item adicionado.");
-    setNome("");
-    setQuantidade("");
-    setDescricao("");
-    setImagem(undefined);
-    if (fileRef.current) fileRef.current.value = "";
+    if (editingId) {
+      updateSubItem(vaga.id, editingId, {
+        nome: nome.trim(),
+        quantidade: qtd,
+        descricao: descricao.trim() || undefined,
+        imagem,
+      });
+      toast.success("Item atualizado.");
+    } else {
+      addSubItem(vaga.id, {
+        nome: nome.trim(),
+        quantidade: qtd,
+        descricao: descricao.trim() || undefined,
+        imagem,
+      });
+      toast.success("Item adicionado.");
+    }
+    resetForm();
   };
 
   return (
