@@ -224,22 +224,15 @@ function Index() {
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {filtered.map((v) => {
               const total = v.subItens.reduce((s, i) => s + i.quantidade, 0);
-              const capa = v.subItens.find((s) => s.imagem)?.imagem;
               return (
-                <Card key={v.id} className="flex flex-col overflow-hidden">
-                  {capa ? (
-                    <div className="aspect-[16/9] w-full overflow-hidden bg-muted">
-                      <img
-                        src={capa}
-                        alt={`Capa da vaga ${v.codigo}`}
-                        className="h-full w-full object-cover"
-                      />
-                    </div>
-                  ) : (
-                    <div className="flex aspect-[16/9] w-full items-center justify-center bg-muted">
-                      <Package className="h-8 w-8 text-muted-foreground" />
-                    </div>
-                  )}
+                <Card
+                  key={v.id}
+                  className="flex cursor-pointer flex-col overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:shadow-lg"
+                  onClick={() => navigate({ to: "/vaga/$id", params: { id: v.id } })}
+                >
+                  <div className="flex aspect-[16/9] w-full items-center justify-center bg-muted transition-colors duration-300 hover:bg-muted/80">
+                    <Package className="h-8 w-8 text-muted-foreground" />
+                  </div>
                   <CardHeader>
                     <div className="flex items-start justify-between gap-2">
                       <div>
@@ -267,16 +260,12 @@ function Index() {
                         {v.observacoes}
                       </p>
                     )}
-                    <div className="mt-auto flex items-center gap-2">
-                      <Button asChild size="sm" className="flex-1">
-                        <Link to="/vaga/$id" params={{ id: v.id }}>
-                          Abrir <ArrowRight className="ml-1.5 h-4 w-4" />
-                        </Link>
-                      </Button>
+                    <div className="mt-auto flex items-center justify-end">
                       <Button
                         size="icon"
                         variant="outline"
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.stopPropagation();
                           if (confirm(`Remover a vaga ${v.codigo}?`)) {
                             removeVaga(v.id);
                             toast.success("Vaga removida.");
