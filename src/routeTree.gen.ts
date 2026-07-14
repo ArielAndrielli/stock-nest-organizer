@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SetoresRouteImport } from './routes/setores'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as VagaIdRouteImport } from './routes/vaga.$id'
 import { Route as SetorIdRouteImport } from './routes/setor.$id'
 
 const SetoresRoute = SetoresRouteImport.update({
@@ -23,6 +24,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const VagaIdRoute = VagaIdRouteImport.update({
+  id: '/vaga/$id',
+  path: '/vaga/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SetorIdRoute = SetorIdRouteImport.update({
   id: '/setor/$id',
   path: '/setor/$id',
@@ -33,30 +39,34 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/setores': typeof SetoresRoute
   '/setor/$id': typeof SetorIdRoute
+  '/vaga/$id': typeof VagaIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/setores': typeof SetoresRoute
   '/setor/$id': typeof SetorIdRoute
+  '/vaga/$id': typeof VagaIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/setores': typeof SetoresRoute
   '/setor/$id': typeof SetorIdRoute
+  '/vaga/$id': typeof VagaIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/setores' | '/setor/$id'
+  fullPaths: '/' | '/setores' | '/setor/$id' | '/vaga/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/setores' | '/setor/$id'
-  id: '__root__' | '/' | '/setores' | '/setor/$id'
+  to: '/' | '/setores' | '/setor/$id' | '/vaga/$id'
+  id: '__root__' | '/' | '/setores' | '/setor/$id' | '/vaga/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   SetoresRoute: typeof SetoresRoute
   SetorIdRoute: typeof SetorIdRoute
+  VagaIdRoute: typeof VagaIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -75,6 +85,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/vaga/$id': {
+      id: '/vaga/$id'
+      path: '/vaga/$id'
+      fullPath: '/vaga/$id'
+      preLoaderRoute: typeof VagaIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/setor/$id': {
       id: '/setor/$id'
       path: '/setor/$id'
@@ -89,6 +106,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   SetoresRoute: SetoresRoute,
   SetorIdRoute: SetorIdRoute,
+  VagaIdRoute: VagaIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
