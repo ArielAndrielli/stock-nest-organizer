@@ -1,14 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { z } from "zod";
-import { zodValidator } from "@tanstack/zod-adapter";
 import { AppShell } from "@/components/AppShell";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useGlobalSearch } from "@/lib/queries";
 
-const searchSchema = z.object({ q: z.string().optional().default("") });
-
 export const Route = createFileRoute("/buscar")({
-  validateSearch: zodValidator(searchSchema),
+  validateSearch: (s: Record<string, unknown>) => ({ q: typeof s.q === "string" ? s.q : "" }),
   head: () => ({
     meta: [
       { title: "Buscar · Estoque" },
