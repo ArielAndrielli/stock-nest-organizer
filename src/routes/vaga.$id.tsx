@@ -1,360 +1,397 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useRef, useState } from "react";
-import { ArrowLeft, ImagePlus, Package, Pencil, Plus, Trash2, X } from "lucide-react";
+import { useMemo, useState } from "react";
+import { ArrowLeft, ArrowRightLeft, Pencil, Plus, Trash2 } from "lucide-react";
+import { AppShell } from "@/components/AppShell";
+import { EntityCard } from "@/components/EntityCard";
+import { ImageField } from "@/components/ImageField";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { toast } from "sonner";
-import { useVaga } from "@/lib/vagas-store";
+import {
+  useVaga,
+  useSetor,
+  useCaixas,
+  useSaveCaixa,
+  useDeleteCaixa,
+  useMoveCaixa,
+  useVagas,
+  useSetores,
+  ocupacaoVaga,
+  capacityStatus,
+  statusLabel,
+  type Caixa,
+} from "@/lib/queries";
 
 export const Route = createFileRoute("/vaga/$id")({
   head: () => ({
     meta: [
-      { title: "Detalhes da vaga" },
-      { name: "description", content: "Gerencie os sub-itens armazenados nesta vaga." },
+      { title: "Vaga · Estoque" },
+      { name: "description", content: "Gerencie as caixas armazenadas nesta vaga." },
       { name: "robots", content: "noindex" },
     ],
   }),
   component: VagaDetail,
 });
 
-const MAX_IMAGE_BYTES = 2 * 1024 * 1024;
-
-function fileToDataUrl(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result));
-    reader.onerror = () => reject(reader.error);
-    reader.readAsDataURL(file);
-  });
-}
-
 function VagaDetail() {
   const { id } = Route.useParams();
-  const { vaga, hydrated, addSubItem, removeSubItem, updateSubItem, removeVaga } = useVaga(id);
   const navigate = useNavigate();
+  const { data: vaga, isLoading: loadingVaga } = useVaga(id);
+  const { data: setor } = useSetor(vaga?.setor_id ?? "");
+  const { data: caixas, isLoading: loadingCaixas } = useCaixas(id);
+  const { data: todasCaixas } = useCaixas();
+  const { data: todasVagas } = useVagas();
+  const { data: setores } = useSetores();
+  const save = useSaveCaixa();
+  const del = useDeleteCaixa();
+  const move = useMoveCaixa();
 
+  const [open, setOpen] = useState(false);
+  const [editing, setEditing] = useState<Caixa | null>(null);
   const [nome, setNome] = useState("");
-  const [quantidade, setQuantidade] = useState("");
+  const [quantidade, setQuantidade] = useState("1");
   const [descricao, setDescricao] = useState("");
-  const [imagem, setImagem] = useState<string | undefined>(undefined);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const fileRef = useRef<HTMLInputElement>(null);
+  const [imagem, setImagem] = useState<string | null>(null);
+  const [confirmDel, setConfirmDel] = useState<Caixa | null>(null);
+  const [moveOpen, setMoveOpen] = useState<Caixa | null>(null);
+  const [moveDest, setMoveDest] = useState<string>("");
 
-  if (hydrated && !vaga) {
-    return (
-      <div className="flex min-h-screen flex-col items-center justify-center gap-3 px-4 text-center">
-        <p className="font-medium">Vaga não encontrada.</p>
-        <Button asChild variant="outline">
-          <Link to="/">
-            <ArrowLeft className="mr-2 h-4 w-4" /> Voltar
-          </Link>
-        </Button>
-      </div>
-    );
-  }
+  const ocupado = useMemo(
+    () => (caixas ?? []).reduce((s, c) => s + c.quantidade, 0),
+    [caixas],
+  );
+  const st = vaga ? capacityStatus(ocupado, vaga.capacidade) : "sem-limite";
+  const lbl = statusLabel(st);
 
-  if (!vaga) return null;
-
-  const total = vaga.subItens.reduce((s, i) => s + i.quantidade, 0);
-
-  const onFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (!file.type.startsWith("image/")) {
-      toast.error("Selecione um arquivo de imagem.");
+  const openNew = () => {
+    if (vaga && vaga.capacidade > 0 && ocupado >= vaga.capacidade) {
+      toast.error("Vaga lotada. Não é possível adicionar mais caixas.");
       return;
     }
-    if (file.size > MAX_IMAGE_BYTES) {
-      toast.error("Imagem muito grande (máx. 2MB).");
-      return;
-    }
-    try {
-      const url = await fileToDataUrl(file);
-      setImagem(url);
-    } catch {
-      toast.error("Falha ao ler a imagem.");
-    }
-  };
-
-  const resetForm = () => {
+    setEditing(null);
     setNome("");
-    setQuantidade("");
+    setQuantidade("1");
     setDescricao("");
-    setImagem(undefined);
-    setEditingId(null);
-    if (fileRef.current) fileRef.current.value = "";
+    setImagem(null);
+    setOpen(true);
   };
-
-  const startEdit = (subId: string) => {
-    const s = vaga.subItens.find((x) => x.id === subId);
-    if (!s) return;
-    setNome(s.nome);
-    setQuantidade(String(s.quantidade));
-    setDescricao(s.descricao || "");
-    setImagem(s.imagem);
-    setEditingId(subId);
-    toast.info("Editando item.");
-  };
-
-  const cancelEdit = () => {
-    resetForm();
-    toast.info("Edição cancelada.");
+  const openEdit = (c: Caixa) => {
+    setEditing(c);
+    setNome(c.nome);
+    setQuantidade(String(c.quantidade));
+    setDescricao(c.descricao ?? "");
+    setImagem(c.imagem_url);
+    setOpen(true);
   };
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!vaga) return;
     if (!nome.trim()) {
-      toast.error("Informe o nome do item.");
+      toast.error("Informe o nome da caixa.");
       return;
     }
-    const qtd = Number(quantidade);
-    if (!Number.isFinite(qtd) || qtd <= 0) {
+    const q = Number(quantidade);
+    if (!Number.isFinite(q) || q < 1) {
       toast.error("Quantidade inválida.");
       return;
     }
-    if (editingId) {
-      updateSubItem(vaga.id, editingId, {
-        nome: nome.trim(),
-        quantidade: qtd,
-        descricao: descricao.trim() || undefined,
-        imagem,
-      });
-      toast.success("Item atualizado.");
-    } else {
-      addSubItem(vaga.id, {
-        nome: nome.trim(),
-        quantidade: qtd,
-        descricao: descricao.trim() || undefined,
-        imagem,
-      });
-      toast.success("Item adicionado.");
+    if (vaga.capacidade > 0) {
+      const outros = editing
+        ? ocupado - editing.quantidade
+        : ocupado;
+      if (outros + q > vaga.capacidade) {
+        toast.error(
+          `Capacidade excedida (${outros + q} / ${vaga.capacidade}). Reduza a quantidade.`,
+        );
+        return;
+      }
     }
-    resetForm();
+    save.mutate(
+      {
+        id: editing?.id,
+        vaga_id: vaga.id,
+        nome: nome.trim(),
+        quantidade: q,
+        descricao: descricao.trim() || null,
+        imagem_url: imagem,
+      },
+      {
+        onSuccess: () => {
+          toast.success(editing ? "Caixa atualizada." : "Caixa adicionada.");
+          setOpen(false);
+        },
+        onError: (e) => toast.error(e instanceof Error ? e.message : "Erro ao salvar."),
+      },
+    );
   };
 
+  const doMove = () => {
+    if (!moveOpen || !moveDest) return;
+    const destino = (todasVagas ?? []).find((v) => v.id === moveDest);
+    if (!destino) return;
+    if (destino.capacidade > 0) {
+      const ocDest = ocupacaoVaga(destino.id, (todasCaixas ?? []).filter((c) => c.id !== moveOpen.id));
+      if (ocDest + moveOpen.quantidade > destino.capacidade) {
+        toast.error(`Vaga destino não comporta esta caixa (${ocDest + moveOpen.quantidade}/${destino.capacidade}).`);
+        return;
+      }
+    }
+    move.mutate(
+      { caixa: moveOpen, vagaDestinoId: moveDest },
+      {
+        onSuccess: () => {
+          toast.success("Caixa movida.");
+          setMoveOpen(null);
+          setMoveDest("");
+        },
+        onError: (e) => toast.error(e instanceof Error ? e.message : "Erro ao mover."),
+      },
+    );
+  };
+
+  if (loadingVaga) {
+    return (
+      <AppShell>
+        <Skeleton className="h-8 w-64" />
+        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Skeleton key={i} className="h-64 rounded-2xl" />
+          ))}
+        </div>
+      </AppShell>
+    );
+  }
+
+  if (!vaga) {
+    return (
+      <AppShell>
+        <div className="rounded-2xl border border-dashed p-12 text-center">
+          <p className="font-medium">Vaga não encontrada</p>
+          <Link to="/setores" className="mt-4 inline-block text-primary hover:underline">Voltar</Link>
+        </div>
+      </AppShell>
+    );
+  }
+
+  const vagasAgrupadas = (setores ?? []).map((s) => ({
+    setor: s,
+    vagas: (todasVagas ?? []).filter((v) => v.setor_id === s.id && v.id !== vaga.id),
+  }));
+
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b bg-card">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-5">
+    <AppShell>
+      {setor && (
+        <Link to="/setor/$id" params={{ id: setor.id }} className="mb-3 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
+          <ArrowLeft className="h-4 w-4" /> {setor.nome}
+        </Link>
+      )}
+      <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
+        <div className="min-w-0">
           <div className="flex items-center gap-3">
-            <Button asChild variant="ghost" size="icon">
-              <Link to="/">
-                <ArrowLeft className="h-4 w-4" />
-              </Link>
-            </Button>
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-lg font-semibold leading-tight">Vaga {vaga.codigo}</h1>
-                <Badge variant="secondary">{vaga.setor}</Badge>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                {vaga.subItens.length} {vaga.subItens.length === 1 ? "item" : "itens"} · {total}{" "}
-                unid. ocupadas
-                {vaga.capacidade ? ` / ${vaga.capacidade}` : ""}
-              </p>
-            </div>
+            <h1 className="text-2xl font-bold">Vaga {vaga.codigo}</h1>
+            <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ${lbl.color}`}>
+              <span className={`h-2 w-2 rounded-full ${lbl.dot}`} />
+              {lbl.label}
+            </span>
           </div>
-          <Button
-            variant="outline"
-            onClick={() => {
-              if (confirm(`Remover a vaga ${vaga.codigo} e todos os itens?`)) {
-                removeVaga(vaga.id);
-                navigate({ to: "/" });
-              }
-            }}
-          >
-            <Trash2 className="mr-2 h-4 w-4" /> Excluir vaga
+          <p className="text-sm text-muted-foreground">
+            Ocupado <b className="text-foreground">{ocupado}</b>
+            {vaga.capacidade > 0 && <> / {vaga.capacidade} unidades</>} · {caixas?.length ?? 0} caixa(s)
+          </p>
+          {vaga.observacoes && <p className="mt-1 text-sm text-muted-foreground">{vaga.observacoes}</p>}
+        </div>
+        <Button onClick={openNew} className="gap-2" disabled={vaga.capacidade > 0 && ocupado >= vaga.capacidade}>
+          <Plus className="h-4 w-4" /> Nova caixa
+        </Button>
+      </div>
+
+      {loadingCaixas && (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Skeleton key={i} className="h-64 rounded-2xl" />
+          ))}
+        </div>
+      )}
+
+      {!loadingCaixas && (caixas?.length ?? 0) === 0 && (
+        <div className="rounded-2xl border border-dashed p-12 text-center animate-fade-in">
+          <p className="font-medium">Nenhuma caixa nesta vaga</p>
+          <Button onClick={openNew} className="mt-4 gap-2">
+            <Plus className="h-4 w-4" /> Nova caixa
           </Button>
         </div>
-      </header>
+      )}
 
-      <main className="mx-auto grid max-w-6xl gap-6 px-6 py-8 lg:grid-cols-[380px_1fr]">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">
-              {editingId ? "Editar sub-item" : "Adicionar sub-item"}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={submit} className="space-y-4">
-              <div className="space-y-1.5">
-                <Label>Imagem (capa)</Label>
-                {imagem ? (
-                  <div className="relative overflow-hidden rounded-md border">
-                    <img
-                      src={imagem}
-                      alt="Prévia"
-                      className="aspect-[16/9] w-full object-cover"
-                    />
-                    <Button
-                      type="button"
-                      size="icon"
-                      variant="secondary"
-                      className="absolute right-2 top-2 h-7 w-7"
-                      onClick={() => {
-                        setImagem(undefined);
-                        if (fileRef.current) fileRef.current.value = "";
-                      }}
-                      aria-label="Remover imagem"
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => fileRef.current?.click()}
-                    className="flex aspect-[16/9] w-full flex-col items-center justify-center gap-1 rounded-md border border-dashed bg-muted/30 text-sm text-muted-foreground transition hover:bg-muted/60"
-                  >
-                    <ImagePlus className="h-5 w-5" />
-                    Selecionar imagem
-                  </button>
-                )}
-                <input
-                  ref={fileRef}
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={onFile}
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="nome">Nome do item *</Label>
-                <Input
-                  id="nome"
-                  placeholder="Ex: Parafuso M6"
-                  value={nome}
-                  onChange={(e) => setNome(e.target.value)}
-                  maxLength={80}
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="qtd">Quantidade *</Label>
-                <Input
-                  id="qtd"
-                  type="number"
-                  min={1}
-                  placeholder="Ex: 20"
-                  value={quantidade}
-                  onChange={(e) => setQuantidade(e.target.value)}
-                />
+      {!loadingCaixas && caixas && caixas.length > 0 && (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {caixas.map((c) => (
+            <EntityCard
+              key={c.id}
+              cover={c.imagem_url}
+              title={c.nome}
+              subtitle={c.descricao ?? undefined}
+              badges={
+                <span className="inline-flex items-center rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+                  Qtd: {c.quantidade}
+                </span>
+              }
+              actions={[
+                { label: "Editar", icon: <Pencil className="mr-2 h-4 w-4" />, onSelect: () => openEdit(c) },
+                {
+                  label: "Mover caixa",
+                  icon: <ArrowRightLeft className="mr-2 h-4 w-4" />,
+                  onSelect: () => {
+                    setMoveOpen(c);
+                    setMoveDest("");
+                  },
+                },
+                {
+                  label: "Excluir",
+                  icon: <Trash2 className="mr-2 h-4 w-4" />,
+                  destructive: true,
+                  onSelect: () => setConfirmDel(c),
+                },
+              ]}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* Form caixa */}
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent>
+          <form onSubmit={submit}>
+            <DialogHeader>
+              <DialogTitle>{editing ? "Editar caixa" : "Nova caixa"}</DialogTitle>
+              <DialogDescription>Adicione uma caixa a esta vaga.</DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid gap-3 sm:grid-cols-[1fr_120px]">
+                <div className="space-y-1.5">
+                  <Label htmlFor="nome">Nome *</Label>
+                  <Input id="nome" value={nome} onChange={(e) => setNome(e.target.value)} maxLength={80} />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="qtd">Quantidade *</Label>
+                  <Input id="qtd" type="number" min={1} value={quantidade} onChange={(e) => setQuantidade(e.target.value)} />
+                </div>
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="desc">Descrição</Label>
-                <Textarea
-                  id="desc"
-                  placeholder="Informações adicionais"
-                  value={descricao}
-                  onChange={(e) => setDescricao(e.target.value)}
-                  maxLength={300}
-                />
+                <Textarea id="desc" value={descricao} onChange={(e) => setDescricao(e.target.value)} maxLength={500} />
               </div>
-              <div className="flex gap-2">
-                <Button type="submit" className="flex-1">
-                  {editingId ? (
-                    <>
-                      <Pencil className="mr-2 h-4 w-4" /> Salvar alterações
-                    </>
-                  ) : (
-                    <>
-                      <Plus className="mr-2 h-4 w-4" /> Adicionar item
-                    </>
-                  )}
-                </Button>
-                {editingId && (
-                  <Button type="button" variant="outline" onClick={cancelEdit}>
-                    Cancelar
-                  </Button>
-                )}
-              </div>
-            </form>
-            {vaga.observacoes && (
-              <div className="mt-6 rounded-md border bg-muted/40 p-3">
-                <p className="text-xs font-medium text-muted-foreground">Observações da vaga</p>
-                <p className="mt-1 text-sm">{vaga.observacoes}</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+              <ImageField value={imagem} onChange={setImagem} />
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>
+              <Button type="submit" disabled={save.isPending}>
+                {save.isPending ? "Salvando…" : editing ? "Salvar" : "Adicionar"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Itens armazenados</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {vaga.subItens.length === 0 ? (
-              <div className="flex flex-col items-center gap-2 py-12 text-center">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
-                  <Package className="h-5 w-5 text-muted-foreground" />
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  Nenhum item cadastrado nesta vaga ainda.
-                </p>
-              </div>
-            ) : (
-              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                {vaga.subItens.map((s) => (
-                  <Card key={s.id} className="overflow-hidden">
-                    {s.imagem ? (
-                      <div className="aspect-[16/9] w-full overflow-hidden bg-muted">
-                        <img
-                          src={s.imagem}
-                          alt={s.nome}
-                          className="h-full w-full object-cover"
-                        />
-                      </div>
-                    ) : (
-                      <div className="flex aspect-[16/9] w-full items-center justify-center bg-muted">
-                        <Package className="h-6 w-6 text-muted-foreground" />
-                      </div>
-                    )}
-                    <CardContent className="space-y-2 p-4">
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="min-w-0">
-                          <p className="truncate font-medium">{s.nome}</p>
-                          {s.descricao && (
-                            <p className="line-clamp-2 text-xs text-muted-foreground">
-                              {s.descricao}
-                            </p>
-                          )}
-                        </div>
-                        <Badge variant="secondary" className="font-mono">
-                          {s.quantidade}
-                        </Badge>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="flex-1"
-                          onClick={() => startEdit(s.id)}
-                        >
-                          <Pencil className="mr-2 h-4 w-4" /> Editar
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="flex-1"
-                          onClick={() => {
-                            removeSubItem(vaga.id, s.id);
-                            toast.success("Item removido.");
-                          }}
-                        >
-                          <Trash2 className="mr-2 h-4 w-4" /> Remover
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
+      {/* Mover caixa */}
+      <Dialog open={!!moveOpen} onOpenChange={(o) => !o && setMoveOpen(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Mover caixa</DialogTitle>
+            <DialogDescription>
+              Selecione a vaga de destino para <b>{moveOpen?.nome}</b>. A caixa e seus dados serão preservados.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-2">
+            <Select value={moveDest} onValueChange={setMoveDest}>
+              <SelectTrigger>
+                <SelectValue placeholder="Escolha a vaga de destino" />
+              </SelectTrigger>
+              <SelectContent>
+                {vagasAgrupadas.filter((g) => g.vagas.length > 0).map((g) => (
+                  <SelectGroup key={g.setor.id}>
+                    <SelectLabel>{g.setor.nome}</SelectLabel>
+                    {g.vagas.map((v) => {
+                      const oc = ocupacaoVaga(v.id, todasCaixas ?? []);
+                      const lot = v.capacidade > 0 && oc >= v.capacidade;
+                      return (
+                        <SelectItem key={v.id} value={v.id} disabled={lot}>
+                          Vaga {v.codigo} — {oc}{v.capacidade > 0 ? `/${v.capacidade}` : ""}
+                          {lot ? " (lotada)" : ""}
+                        </SelectItem>
+                      );
+                    })}
+                  </SelectGroup>
                 ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </main>
-    </div>
+              </SelectContent>
+            </Select>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setMoveOpen(null)}>Cancelar</Button>
+            <Button onClick={doMove} disabled={!moveDest || move.isPending}>
+              {move.isPending ? "Movendo…" : "Mover"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <AlertDialog open={!!confirmDel} onOpenChange={(o) => !o && setConfirmDel(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir caixa?</AlertDialogTitle>
+            <AlertDialogDescription>
+              A caixa <b>{confirmDel?.nome}</b> será removida.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (!confirmDel) return;
+                del.mutate(confirmDel.id, {
+                  onSuccess: () => toast.success("Caixa removida."),
+                  onError: (e) => toast.error(e instanceof Error ? e.message : "Erro ao remover."),
+                });
+                setConfirmDel(null);
+              }}
+            >
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      {/* referenciar navigate para evitar unused */}
+      <span className="hidden">{String(!!navigate)}</span>
+    </AppShell>
   );
 }

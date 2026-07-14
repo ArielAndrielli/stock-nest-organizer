@@ -9,9 +9,22 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SetoresRouteImport } from './routes/setores'
+import { Route as BuscarRouteImport } from './routes/buscar'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as VagaIdRouteImport } from './routes/vaga.$id'
+import { Route as SetorIdRouteImport } from './routes/setor.$id'
 
+const SetoresRoute = SetoresRouteImport.update({
+  id: '/setores',
+  path: '/setores',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BuscarRoute = BuscarRouteImport.update({
+  id: '/buscar',
+  path: '/buscar',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -22,35 +35,66 @@ const VagaIdRoute = VagaIdRouteImport.update({
   path: '/vaga/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SetorIdRoute = SetorIdRouteImport.update({
+  id: '/setor/$id',
+  path: '/setor/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/buscar': typeof BuscarRoute
+  '/setores': typeof SetoresRoute
+  '/setor/$id': typeof SetorIdRoute
   '/vaga/$id': typeof VagaIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/buscar': typeof BuscarRoute
+  '/setores': typeof SetoresRoute
+  '/setor/$id': typeof SetorIdRoute
   '/vaga/$id': typeof VagaIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/buscar': typeof BuscarRoute
+  '/setores': typeof SetoresRoute
+  '/setor/$id': typeof SetorIdRoute
   '/vaga/$id': typeof VagaIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/vaga/$id'
+  fullPaths: '/' | '/buscar' | '/setores' | '/setor/$id' | '/vaga/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/vaga/$id'
-  id: '__root__' | '/' | '/vaga/$id'
+  to: '/' | '/buscar' | '/setores' | '/setor/$id' | '/vaga/$id'
+  id: '__root__' | '/' | '/buscar' | '/setores' | '/setor/$id' | '/vaga/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  BuscarRoute: typeof BuscarRoute
+  SetoresRoute: typeof SetoresRoute
+  SetorIdRoute: typeof SetorIdRoute
   VagaIdRoute: typeof VagaIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/setores': {
+      id: '/setores'
+      path: '/setores'
+      fullPath: '/setores'
+      preLoaderRoute: typeof SetoresRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/buscar': {
+      id: '/buscar'
+      path: '/buscar'
+      fullPath: '/buscar'
+      preLoaderRoute: typeof BuscarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -65,23 +109,23 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof VagaIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/setor/$id': {
+      id: '/setor/$id'
+      path: '/setor/$id'
+      fullPath: '/setor/$id'
+      preLoaderRoute: typeof SetorIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  BuscarRoute: BuscarRoute,
+  SetoresRoute: SetoresRoute,
+  SetorIdRoute: SetorIdRoute,
   VagaIdRoute: VagaIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

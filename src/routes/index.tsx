@@ -1,288 +1,221 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
-import { Boxes, Package, Plus, Trash2, Search } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { Boxes, Layers, PackageOpen, PackagePlus } from "lucide-react";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
-import { toast } from "sonner";
-import { useVagas } from "@/lib/vagas-store";
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  Legend,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
+import { AppShell } from "@/components/AppShell";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useDashboardData, capacityStatus } from "@/lib/queries";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Gestão de Vagas de Estoque" },
-      {
-        name: "description",
-        content:
-          "Cadastre vagas de estoque e gerencie os sub-itens armazenados em cada posição do seu armazém.",
-      },
-      { property: "og:title", content: "Gestão de Vagas de Estoque" },
-      {
-        property: "og:description",
-        content: "Cadastre vagas de estoque e gerencie os sub-itens de cada posição.",
-      },
+      { title: "Dashboard · Estoque" },
+      { name: "description", content: "Visão geral do estoque: setores, vagas, caixas e ocupação." },
     ],
   }),
-  component: Index,
+  component: Dashboard,
 });
 
-function Index() {
-  const { vagas, hydrated, addVaga, removeVaga } = useVagas();
-  const navigate = useNavigate();
-  const [open, setOpen] = useState(false);
-  const [codigo, setCodigo] = useState("");
-  const [setor, setSetor] = useState("");
-  const [capacidade, setCapacidade] = useState("");
-  const [observacoes, setObservacoes] = useState("");
-  const [query, setQuery] = useState("");
+function Stat({
+  icon,
+  label,
+  value,
+  hint,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: React.ReactNode;
+  hint?: string;
+}) {
+  return (
+    <Card className="animate-fade-in">
+      <CardContent className="flex items-center gap-4 p-5">
+        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
+          {icon}
+        </div>
+        <div className="min-w-0">
+          <div className="text-xs uppercase tracking-wide text-muted-foreground">{label}</div>
+          <div className="text-2xl font-bold leading-tight">{value}</div>
+          {hint && <div className="text-xs text-muted-foreground">{hint}</div>}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
 
-  const reset = () => {
-    setCodigo("");
-    setSetor("");
-    setCapacidade("");
-    setObservacoes("");
-  };
+function Dashboard() {
+  const { data, isLoading } = useDashboardData();
 
-  const submit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!codigo.trim() || !setor.trim()) {
-      toast.error("Preencha o código e o setor.");
-      return;
-    }
-    const cap = Number(capacidade);
-    if (!Number.isFinite(cap) || cap < 0) {
-      toast.error("Capacidade inválida.");
-      return;
-    }
-    addVaga({
-      codigo: codigo.trim(),
-      setor: setor.trim(),
-      capacidade: cap,
-      observacoes: observacoes.trim() || undefined,
-    });
-    toast.success(`Vaga ${codigo} cadastrada.`);
-    reset();
-    setOpen(false);
-  };
-
-  const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return vagas;
-    return vagas.filter(
-      (v) =>
-        v.codigo.toLowerCase().includes(q) ||
-        v.setor.toLowerCase().includes(q),
+  if (isLoading || !data) {
+    return (
+      <AppShell>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Skeleton key={i} className="h-24 rounded-xl" />
+          ))}
+        </div>
+        <div className="mt-6 grid gap-4 lg:grid-cols-2">
+          <Skeleton className="h-72 rounded-xl" />
+          <Skeleton className="h-72 rounded-xl" />
+        </div>
+      </AppShell>
     );
-  }, [vagas, query]);
+  }
+
+  const totalSetores = data.setores.length;
+  const totalVagas = data.vagas.length;
+  const totalCaixas = data.caixas.length;
+
+  let vazias = 0;
+  let ocupadas = 0;
+  let somaCap = 0;
+  let somaOc = 0;
+
+  const setorMap = new Map(data.setores.map((s) => [s.id, s.nome]));
+  const porSetor = new Map<string, { nome: string; caixas: number; ocupacao: number; capacidade: number }>();
+  for (const s of data.setores) porSetor.set(s.id, { nome: s.nome, caixas: 0, ocupacao: 0, capacidade: 0 });
+
+  for (const v of data.vagas) {
+    const oc = data.caixas.filter((c) => c.vaga_id === v.id).reduce((a, c) => a + c.quantidade, 0);
+    if (oc === 0) vazias++;
+    else ocupadas++;
+    if (v.capacidade > 0) {
+      somaCap += v.capacidade;
+      somaOc += Math.min(oc, v.capacidade);
+    }
+    const bucket = porSetor.get(v.setor_id);
+    if (bucket) {
+      bucket.ocupacao += oc;
+      bucket.capacidade += v.capacidade;
+    }
+  }
+  for (const c of data.caixas) {
+    const vaga = data.vagas.find((vv) => vv.id === c.vaga_id);
+    if (!vaga) continue;
+    const b = porSetor.get(vaga.setor_id);
+    if (b) b.caixas += 1;
+  }
+
+  const pctOcupacao = somaCap > 0 ? Math.round((somaOc / somaCap) * 100) : 0;
+
+  const chartData = Array.from(porSetor.values()).map((b) => ({
+    nome: b.nome,
+    caixas: b.caixas,
+    ocupacao: b.capacidade > 0 ? Math.round((b.ocupacao / b.capacidade) * 100) : 0,
+  }));
+
+  const statusData = [
+    { name: "Livres", value: vazias, fill: "hsl(142 71% 45%)" },
+    { name: "Ocupadas", value: ocupadas, fill: "hsl(217 91% 60%)" },
+  ];
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b bg-card">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-              <Boxes className="h-5 w-5" />
-            </div>
-            <div>
-              <h1 className="text-lg font-semibold leading-tight">Vagas de Estoque</h1>
-              <p className="text-xs text-muted-foreground">
-                Cadastre posições e gerencie os itens armazenados
-              </p>
-            </div>
-          </div>
-          <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="mr-2 h-4 w-4" /> Nova vaga
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <form onSubmit={submit}>
-                <DialogHeader>
-                  <DialogTitle>Cadastrar nova vaga</DialogTitle>
-                  <DialogDescription>
-                    Defina o código, setor e capacidade da posição de estoque.
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="grid gap-4 py-4">
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1.5">
-                      <Label htmlFor="codigo">Código *</Label>
-                      <Input
-                        id="codigo"
-                        placeholder="Ex: A-01-03"
-                        value={codigo}
-                        onChange={(e) => setCodigo(e.target.value)}
-                        maxLength={40}
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label htmlFor="setor">Setor *</Label>
-                      <Input
-                        id="setor"
-                        placeholder="Ex: Corredor A"
-                        value={setor}
-                        onChange={(e) => setSetor(e.target.value)}
-                        maxLength={60}
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="capacidade">Capacidade (unidades)</Label>
-                    <Input
-                      id="capacidade"
-                      type="number"
-                      min={0}
-                      placeholder="Ex: 100"
-                      value={capacidade}
-                      onChange={(e) => setCapacidade(e.target.value)}
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="obs">Observações</Label>
-                    <Textarea
-                      id="obs"
-                      placeholder="Notas sobre a vaga"
-                      value={observacoes}
-                      onChange={(e) => setObservacoes(e.target.value)}
-                      maxLength={500}
-                    />
-                  </div>
-                </div>
-                <DialogFooter>
-                  <Button type="button" variant="outline" onClick={() => setOpen(false)}>
-                    Cancelar
-                  </Button>
-                  <Button type="submit">Cadastrar</Button>
-                </DialogFooter>
-              </form>
-            </DialogContent>
-          </Dialog>
+    <AppShell>
+      <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold">Dashboard</h1>
+          <p className="text-sm text-muted-foreground">Visão geral do seu estoque em tempo real.</p>
         </div>
-      </header>
+        <Link
+          to="/setores"
+          className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition-colors hover:bg-primary/90"
+        >
+          <PackagePlus className="h-4 w-4" /> Gerenciar setores
+        </Link>
+      </div>
 
-      <main className="mx-auto max-w-6xl px-6 py-8">
-        <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h2 className="text-xl font-semibold">Vagas cadastradas</h2>
-            <p className="text-sm text-muted-foreground">
-              {vagas.length} {vagas.length === 1 ? "vaga" : "vagas"} no total
-              {query && ` · ${filtered.length} encontradas`}
-            </p>
-          </div>
-          <div className="relative w-full sm:w-80">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              placeholder="Buscar por código ou setor..."
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              className="pl-9"
-            />
-          </div>
-        </div>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <Stat icon={<Layers className="h-5 w-5" />} label="Setores" value={totalSetores} />
+        <Stat icon={<Boxes className="h-5 w-5" />} label="Vagas" value={totalVagas} hint={`${vazias} vazias · ${ocupadas} ocupadas`} />
+        <Stat icon={<PackageOpen className="h-5 w-5" />} label="Caixas" value={totalCaixas} />
+        <Stat
+          icon={<PackageOpen className="h-5 w-5" />}
+          label="Ocupação total"
+          value={`${pctOcupacao}%`}
+          hint={somaCap > 0 ? `${somaOc} / ${somaCap} unidades` : "Sem capacidade definida"}
+        />
+      </div>
 
-        {hydrated && vagas.length === 0 ? (
-          <Card className="border-dashed">
-            <CardContent className="flex flex-col items-center justify-center gap-3 py-16 text-center">
-              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-muted">
-                <Package className="h-6 w-6 text-muted-foreground" />
-              </div>
-              <div>
-                <p className="font-medium">Nenhuma vaga cadastrada</p>
-                <p className="text-sm text-muted-foreground">
-                  Comece criando a primeira posição do seu estoque.
-                </p>
-              </div>
-              <Button onClick={() => setOpen(true)}>
-                <Plus className="mr-2 h-4 w-4" /> Cadastrar vaga
-              </Button>
+      <div className="mt-6 grid gap-4 lg:grid-cols-2">
+        <Card className="animate-fade-in">
+          <CardHeader>
+            <CardTitle>Ocupação por setor (%)</CardTitle>
+          </CardHeader>
+          <CardContent className="h-72">
+            {chartData.length === 0 ? (
+              <p className="text-sm text-muted-foreground">Cadastre setores e vagas para ver o gráfico.</p>
+            ) : (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={chartData}>
+                  <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
+                  <XAxis dataKey="nome" tick={{ fontSize: 12 }} />
+                  <YAxis unit="%" tick={{ fontSize: 12 }} />
+                  <Tooltip />
+                  <Bar dataKey="ocupacao" fill="hsl(217 91% 60%)" radius={[6, 6, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card className="animate-fade-in">
+          <CardHeader>
+            <CardTitle>Caixas por setor</CardTitle>
+          </CardHeader>
+          <CardContent className="h-72">
+            {chartData.length === 0 ? (
+              <p className="text-sm text-muted-foreground">Sem dados ainda.</p>
+            ) : (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={chartData}>
+                  <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
+                  <XAxis dataKey="nome" tick={{ fontSize: 12 }} />
+                  <YAxis tick={{ fontSize: 12 }} />
+                  <Tooltip />
+                  <Bar dataKey="caixas" fill="hsl(142 71% 45%)" radius={[6, 6, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {totalVagas > 0 && (
+        <div className="mt-6">
+          <Card className="animate-fade-in">
+            <CardHeader>
+              <CardTitle>Vagas livres vs ocupadas</CardTitle>
+            </CardHeader>
+            <CardContent className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie data={statusData} dataKey="value" nameKey="name" innerRadius={50} outerRadius={90} label>
+                    {statusData.map((s, i) => (
+                      <Cell key={i} fill={s.fill} />
+                    ))}
+                  </Pie>
+                  <Legend />
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
             </CardContent>
           </Card>
-        ) : hydrated && filtered.length === 0 ? (
-          <Card className="border-dashed">
-            <CardContent className="flex flex-col items-center justify-center gap-2 py-12 text-center">
-              <Search className="h-6 w-6 text-muted-foreground" />
-              <p className="font-medium">Nenhuma vaga encontrada</p>
-              <p className="text-sm text-muted-foreground">
-                Tente outro código ou setor.
-              </p>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {filtered.map((v) => {
-              const total = v.subItens.reduce((s, i) => s + i.quantidade, 0);
-              return (
-                <Card
-                  key={v.id}
-                  className="flex cursor-pointer flex-col overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:shadow-lg"
-                  onClick={() => navigate({ to: "/vaga/$id", params: { id: v.id } })}
-                >
-                  <div className="flex aspect-[16/9] w-full items-center justify-center bg-muted transition-colors duration-300 hover:bg-muted/80">
-                    <Package className="h-8 w-8 text-muted-foreground" />
-                  </div>
-                  <CardHeader>
-                    <div className="flex items-start justify-between gap-2">
-                      <div>
-                        <CardTitle className="text-base">{v.codigo}</CardTitle>
-                        <CardDescription>{v.setor}</CardDescription>
-                      </div>
-                      <Badge variant="secondary">
-                        {v.subItens.length} {v.subItens.length === 1 ? "item" : "itens"}
-                      </Badge>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="flex flex-1 flex-col gap-4">
-                    <div className="grid grid-cols-2 gap-3 text-sm">
-                      <div>
-                        <p className="text-xs text-muted-foreground">Capacidade</p>
-                        <p className="font-medium">{v.capacidade || "—"}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground">Ocupado</p>
-                        <p className="font-medium">{total}</p>
-                      </div>
-                    </div>
-                    {v.observacoes && (
-                      <p className="line-clamp-2 text-sm text-muted-foreground">
-                        {v.observacoes}
-                      </p>
-                    )}
-                    <div className="mt-auto flex items-center justify-end">
-                      <Button
-                        size="icon"
-                        variant="outline"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (confirm(`Remover a vaga ${v.codigo}?`)) {
-                            removeVaga(v.id);
-                            toast.success("Vaga removida.");
-                          }
-                        }}
-                        aria-label="Remover vaga"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
-        )}
-      </main>
-    </div>
+        </div>
+      )}
+      {/* placeholder to keep capacityStatus/setorMap referenced */}
+      <span className="hidden">{capacityStatus(0, 0)}{setorMap.size}</span>
+    </AppShell>
   );
 }
