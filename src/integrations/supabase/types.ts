@@ -14,7 +14,152 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      caixas: {
+        Row: {
+          criado_em: string
+          descricao: string | null
+          id: string
+          imagem_url: string | null
+          nome: string
+          quantidade: number
+          vaga_id: string
+        }
+        Insert: {
+          criado_em?: string
+          descricao?: string | null
+          id?: string
+          imagem_url?: string | null
+          nome: string
+          quantidade?: number
+          vaga_id: string
+        }
+        Update: {
+          criado_em?: string
+          descricao?: string | null
+          id?: string
+          imagem_url?: string | null
+          nome?: string
+          quantidade?: number
+          vaga_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "caixas_vaga_id_fkey"
+            columns: ["vaga_id"]
+            isOneToOne: false
+            referencedRelation: "vagas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      movimentacoes_caixa: {
+        Row: {
+          caixa_id: string
+          criado_em: string
+          id: string
+          vaga_destino_id: string | null
+          vaga_origem_id: string | null
+        }
+        Insert: {
+          caixa_id: string
+          criado_em?: string
+          id?: string
+          vaga_destino_id?: string | null
+          vaga_origem_id?: string | null
+        }
+        Update: {
+          caixa_id?: string
+          criado_em?: string
+          id?: string
+          vaga_destino_id?: string | null
+          vaga_origem_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "movimentacoes_caixa_caixa_id_fkey"
+            columns: ["caixa_id"]
+            isOneToOne: false
+            referencedRelation: "caixas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "movimentacoes_caixa_vaga_destino_id_fkey"
+            columns: ["vaga_destino_id"]
+            isOneToOne: false
+            referencedRelation: "vagas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "movimentacoes_caixa_vaga_origem_id_fkey"
+            columns: ["vaga_origem_id"]
+            isOneToOne: false
+            referencedRelation: "vagas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      setores: {
+        Row: {
+          criado_em: string
+          descricao: string | null
+          id: string
+          imagem_url: string | null
+          nome: string
+        }
+        Insert: {
+          criado_em?: string
+          descricao?: string | null
+          id?: string
+          imagem_url?: string | null
+          nome: string
+        }
+        Update: {
+          criado_em?: string
+          descricao?: string | null
+          id?: string
+          imagem_url?: string | null
+          nome?: string
+        }
+        Relationships: []
+      }
+      vagas: {
+        Row: {
+          capacidade: number
+          codigo: string
+          criado_em: string
+          id: string
+          imagem_url: string | null
+          observacoes: string | null
+          setor_id: string
+        }
+        Insert: {
+          capacidade?: number
+          codigo: string
+          criado_em?: string
+          id?: string
+          imagem_url?: string | null
+          observacoes?: string | null
+          setor_id: string
+        }
+        Update: {
+          capacidade?: number
+          codigo?: string
+          criado_em?: string
+          id?: string
+          imagem_url?: string | null
+          observacoes?: string | null
+          setor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vagas_setor_id_fkey"
+            columns: ["setor_id"]
+            isOneToOne: false
+            referencedRelation: "setores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
