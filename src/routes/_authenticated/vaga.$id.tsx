@@ -52,7 +52,7 @@ import {
   type Caixa,
 } from "@/lib/queries";
 
-export const Route = createFileRoute("/vaga/$id")({
+export const Route = createFileRoute("/_authenticated/vaga/$id")({
   head: () => ({
     meta: [
       { title: "Vaga · Estoque" },

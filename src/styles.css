@@ -142,3 +142,10 @@
     color: var(--color-foreground);
   }
 }
+
+@media print {
+  .no-print { display: none !important; }
+  body { background: white !important; }
+  main { padding: 0 !important; }
+  .etiqueta { page-break-inside: avoid; border-color: #ccc !important; }
+}

@@ -9,133 +9,270 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as SetoresRouteImport } from './routes/setores'
-import { Route as BuscarRouteImport } from './routes/buscar'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as VagaIdRouteImport } from './routes/vaga.$id'
-import { Route as SetorIdRouteImport } from './routes/setor.$id'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
+import { Route as AuthenticatedSetoresRouteImport } from './routes/_authenticated/setores'
+import { Route as AuthenticatedHistoricoRouteImport } from './routes/_authenticated/historico'
+import { Route as AuthenticatedEtiquetasRouteImport } from './routes/_authenticated/etiquetas'
+import { Route as AuthenticatedBuscarRouteImport } from './routes/_authenticated/buscar'
+import { Route as AuthenticatedVagaIdRouteImport } from './routes/_authenticated/vaga.$id'
+import { Route as AuthenticatedSetorIdRouteImport } from './routes/_authenticated/setor.$id'
+import { Route as AuthenticatedCaixaIdRouteImport } from './routes/_authenticated/caixa.$id'
+import { Route as AuthenticatedAdminUsuariosRouteImport } from './routes/_authenticated/admin.usuarios'
 
-const SetoresRoute = SetoresRouteImport.update({
-  id: '/setores',
-  path: '/setores',
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
-const BuscarRoute = BuscarRouteImport.update({
-  id: '/buscar',
-  path: '/buscar',
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
+const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const VagaIdRoute = VagaIdRouteImport.update({
+const AuthenticatedSetoresRoute = AuthenticatedSetoresRouteImport.update({
+  id: '/setores',
+  path: '/setores',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedHistoricoRoute = AuthenticatedHistoricoRouteImport.update({
+  id: '/historico',
+  path: '/historico',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedEtiquetasRoute = AuthenticatedEtiquetasRouteImport.update({
+  id: '/etiquetas',
+  path: '/etiquetas',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedBuscarRoute = AuthenticatedBuscarRouteImport.update({
+  id: '/buscar',
+  path: '/buscar',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedVagaIdRoute = AuthenticatedVagaIdRouteImport.update({
   id: '/vaga/$id',
   path: '/vaga/$id',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const SetorIdRoute = SetorIdRouteImport.update({
+const AuthenticatedSetorIdRoute = AuthenticatedSetorIdRouteImport.update({
   id: '/setor/$id',
   path: '/setor/$id',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedCaixaIdRoute = AuthenticatedCaixaIdRouteImport.update({
+  id: '/caixa/$id',
+  path: '/caixa/$id',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedAdminUsuariosRoute =
+  AuthenticatedAdminUsuariosRouteImport.update({
+    id: '/admin/usuarios',
+    path: '/admin/usuarios',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
-  '/buscar': typeof BuscarRoute
-  '/setores': typeof SetoresRoute
-  '/setor/$id': typeof SetorIdRoute
-  '/vaga/$id': typeof VagaIdRoute
+  '/': typeof AuthenticatedIndexRoute
+  '/auth': typeof AuthRoute
+  '/buscar': typeof AuthenticatedBuscarRoute
+  '/etiquetas': typeof AuthenticatedEtiquetasRoute
+  '/historico': typeof AuthenticatedHistoricoRoute
+  '/setores': typeof AuthenticatedSetoresRoute
+  '/admin/usuarios': typeof AuthenticatedAdminUsuariosRoute
+  '/caixa/$id': typeof AuthenticatedCaixaIdRoute
+  '/setor/$id': typeof AuthenticatedSetorIdRoute
+  '/vaga/$id': typeof AuthenticatedVagaIdRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '/buscar': typeof BuscarRoute
-  '/setores': typeof SetoresRoute
-  '/setor/$id': typeof SetorIdRoute
-  '/vaga/$id': typeof VagaIdRoute
+  '/auth': typeof AuthRoute
+  '/buscar': typeof AuthenticatedBuscarRoute
+  '/etiquetas': typeof AuthenticatedEtiquetasRoute
+  '/historico': typeof AuthenticatedHistoricoRoute
+  '/setores': typeof AuthenticatedSetoresRoute
+  '/': typeof AuthenticatedIndexRoute
+  '/admin/usuarios': typeof AuthenticatedAdminUsuariosRoute
+  '/caixa/$id': typeof AuthenticatedCaixaIdRoute
+  '/setor/$id': typeof AuthenticatedSetorIdRoute
+  '/vaga/$id': typeof AuthenticatedVagaIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
-  '/buscar': typeof BuscarRoute
-  '/setores': typeof SetoresRoute
-  '/setor/$id': typeof SetorIdRoute
-  '/vaga/$id': typeof VagaIdRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/auth': typeof AuthRoute
+  '/_authenticated/buscar': typeof AuthenticatedBuscarRoute
+  '/_authenticated/etiquetas': typeof AuthenticatedEtiquetasRoute
+  '/_authenticated/historico': typeof AuthenticatedHistoricoRoute
+  '/_authenticated/setores': typeof AuthenticatedSetoresRoute
+  '/_authenticated/': typeof AuthenticatedIndexRoute
+  '/_authenticated/admin/usuarios': typeof AuthenticatedAdminUsuariosRoute
+  '/_authenticated/caixa/$id': typeof AuthenticatedCaixaIdRoute
+  '/_authenticated/setor/$id': typeof AuthenticatedSetorIdRoute
+  '/_authenticated/vaga/$id': typeof AuthenticatedVagaIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/buscar' | '/setores' | '/setor/$id' | '/vaga/$id'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/buscar'
+    | '/etiquetas'
+    | '/historico'
+    | '/setores'
+    | '/admin/usuarios'
+    | '/caixa/$id'
+    | '/setor/$id'
+    | '/vaga/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/buscar' | '/setores' | '/setor/$id' | '/vaga/$id'
-  id: '__root__' | '/' | '/buscar' | '/setores' | '/setor/$id' | '/vaga/$id'
+  to:
+    | '/auth'
+    | '/buscar'
+    | '/etiquetas'
+    | '/historico'
+    | '/setores'
+    | '/'
+    | '/admin/usuarios'
+    | '/caixa/$id'
+    | '/setor/$id'
+    | '/vaga/$id'
+  id:
+    | '__root__'
+    | '/_authenticated'
+    | '/auth'
+    | '/_authenticated/buscar'
+    | '/_authenticated/etiquetas'
+    | '/_authenticated/historico'
+    | '/_authenticated/setores'
+    | '/_authenticated/'
+    | '/_authenticated/admin/usuarios'
+    | '/_authenticated/caixa/$id'
+    | '/_authenticated/setor/$id'
+    | '/_authenticated/vaga/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
-  BuscarRoute: typeof BuscarRoute
-  SetoresRoute: typeof SetoresRoute
-  SetorIdRoute: typeof SetorIdRoute
-  VagaIdRoute: typeof VagaIdRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AuthRoute: typeof AuthRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/setores': {
-      id: '/setores'
-      path: '/setores'
-      fullPath: '/setores'
-      preLoaderRoute: typeof SetoresRouteImport
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/buscar': {
-      id: '/buscar'
-      path: '/buscar'
-      fullPath: '/buscar'
-      preLoaderRoute: typeof BuscarRouteImport
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
+    '/_authenticated/': {
+      id: '/_authenticated/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof AuthenticatedIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/vaga/$id': {
-      id: '/vaga/$id'
+    '/_authenticated/setores': {
+      id: '/_authenticated/setores'
+      path: '/setores'
+      fullPath: '/setores'
+      preLoaderRoute: typeof AuthenticatedSetoresRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/historico': {
+      id: '/_authenticated/historico'
+      path: '/historico'
+      fullPath: '/historico'
+      preLoaderRoute: typeof AuthenticatedHistoricoRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/etiquetas': {
+      id: '/_authenticated/etiquetas'
+      path: '/etiquetas'
+      fullPath: '/etiquetas'
+      preLoaderRoute: typeof AuthenticatedEtiquetasRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/buscar': {
+      id: '/_authenticated/buscar'
+      path: '/buscar'
+      fullPath: '/buscar'
+      preLoaderRoute: typeof AuthenticatedBuscarRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/vaga/$id': {
+      id: '/_authenticated/vaga/$id'
       path: '/vaga/$id'
       fullPath: '/vaga/$id'
-      preLoaderRoute: typeof VagaIdRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof AuthenticatedVagaIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/setor/$id': {
-      id: '/setor/$id'
+    '/_authenticated/setor/$id': {
+      id: '/_authenticated/setor/$id'
       path: '/setor/$id'
       fullPath: '/setor/$id'
-      preLoaderRoute: typeof SetorIdRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof AuthenticatedSetorIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/caixa/$id': {
+      id: '/_authenticated/caixa/$id'
+      path: '/caixa/$id'
+      fullPath: '/caixa/$id'
+      preLoaderRoute: typeof AuthenticatedCaixaIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admin/usuarios': {
+      id: '/_authenticated/admin/usuarios'
+      path: '/admin/usuarios'
+      fullPath: '/admin/usuarios'
+      preLoaderRoute: typeof AuthenticatedAdminUsuariosRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
   }
 }
 
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedBuscarRoute: typeof AuthenticatedBuscarRoute
+  AuthenticatedEtiquetasRoute: typeof AuthenticatedEtiquetasRoute
+  AuthenticatedHistoricoRoute: typeof AuthenticatedHistoricoRoute
+  AuthenticatedSetoresRoute: typeof AuthenticatedSetoresRoute
+  AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
+  AuthenticatedAdminUsuariosRoute: typeof AuthenticatedAdminUsuariosRoute
+  AuthenticatedCaixaIdRoute: typeof AuthenticatedCaixaIdRoute
+  AuthenticatedSetorIdRoute: typeof AuthenticatedSetorIdRoute
+  AuthenticatedVagaIdRoute: typeof AuthenticatedVagaIdRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedBuscarRoute: AuthenticatedBuscarRoute,
+  AuthenticatedEtiquetasRoute: AuthenticatedEtiquetasRoute,
+  AuthenticatedHistoricoRoute: AuthenticatedHistoricoRoute,
+  AuthenticatedSetoresRoute: AuthenticatedSetoresRoute,
+  AuthenticatedIndexRoute: AuthenticatedIndexRoute,
+  AuthenticatedAdminUsuariosRoute: AuthenticatedAdminUsuariosRoute,
+  AuthenticatedCaixaIdRoute: AuthenticatedCaixaIdRoute,
+  AuthenticatedSetorIdRoute: AuthenticatedSetorIdRoute,
+  AuthenticatedVagaIdRoute: AuthenticatedVagaIdRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
-  BuscarRoute: BuscarRoute,
-  SetoresRoute: SetoresRoute,
-  SetorIdRoute: SetorIdRoute,
-  VagaIdRoute: VagaIdRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AuthRoute: AuthRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

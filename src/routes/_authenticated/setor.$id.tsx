@@ -40,7 +40,7 @@ import {
   type Vaga,
 } from "@/lib/queries";
 
-export const Route = createFileRoute("/setor/$id")({
+export const Route = createFileRoute("/_authenticated/setor/$id")({
   head: () => ({
     meta: [
       { title: "Setor · Estoque" },

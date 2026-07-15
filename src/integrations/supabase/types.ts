@@ -52,6 +52,42 @@ export type Database = {
           },
         ]
       }
+      historico_eventos: {
+        Row: {
+          acao: string
+          criado_em: string
+          detalhes: Json | null
+          entidade: string
+          entidade_id: string | null
+          entidade_nome: string | null
+          id: string
+          usuario_email: string | null
+          usuario_id: string | null
+        }
+        Insert: {
+          acao: string
+          criado_em?: string
+          detalhes?: Json | null
+          entidade: string
+          entidade_id?: string | null
+          entidade_nome?: string | null
+          id?: string
+          usuario_email?: string | null
+          usuario_id?: string | null
+        }
+        Update: {
+          acao?: string
+          criado_em?: string
+          detalhes?: Json | null
+          entidade?: string
+          entidade_id?: string | null
+          entidade_nome?: string | null
+          id?: string
+          usuario_email?: string | null
+          usuario_id?: string | null
+        }
+        Relationships: []
+      }
       movimentacoes_caixa: {
         Row: {
           caixa_id: string
@@ -98,6 +134,30 @@ export type Database = {
           },
         ]
       }
+      profiles: {
+        Row: {
+          atualizado_em: string
+          criado_em: string
+          email: string | null
+          id: string
+          nome_exibicao: string | null
+        }
+        Insert: {
+          atualizado_em?: string
+          criado_em?: string
+          email?: string | null
+          id: string
+          nome_exibicao?: string | null
+        }
+        Update: {
+          atualizado_em?: string
+          criado_em?: string
+          email?: string | null
+          id?: string
+          nome_exibicao?: string | null
+        }
+        Relationships: []
+      }
       setores: {
         Row: {
           criado_em: string
@@ -119,6 +179,27 @@ export type Database = {
           id?: string
           imagem_url?: string | null
           nome?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          criado_em: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          criado_em?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          criado_em?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
         }
         Relationships: []
       }
@@ -165,10 +246,18 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      current_email: { Args: never; Returns: string }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      pode_editar: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "administrador" | "operador" | "visitante"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -295,6 +384,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["administrador", "operador", "visitante"],
+    },
   },
 } as const

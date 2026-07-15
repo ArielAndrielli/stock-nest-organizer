@@ -3,7 +3,7 @@ import { AppShell } from "@/components/AppShell";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useGlobalSearch } from "@/lib/queries";
 
-export const Route = createFileRoute("/buscar")({
+export const Route = createFileRoute("/_authenticated/buscar")({
   validateSearch: (s: Record<string, unknown>) => ({ q: typeof s.q === "string" ? s.q : "" }),
   head: () => ({
     meta: [
