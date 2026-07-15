@@ -9,122 +9,109 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as SetoresRouteImport } from './routes/setores'
-import { Route as BuscarRouteImport } from './routes/buscar'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as VagaIdRouteImport } from './routes/vaga.$id'
-import { Route as SetorIdRouteImport } from './routes/setor.$id'
+import { Route as AuthenticatedSetoresRouteImport } from './routes/_authenticated/setores'
+import { Route as AuthenticatedBuscarRouteImport } from './routes/_authenticated/buscar'
+import { Route as AuthenticatedVagaIdRouteImport } from './routes/_authenticated/vaga.$id'
+import { Route as AuthenticatedSetorIdRouteImport } from './routes/_authenticated/setor.$id'
 
-const SetoresRoute = SetoresRouteImport.update({
-  id: '/setores',
+const AuthenticatedSetoresRoute = AuthenticatedSetoresRouteImport.update({
+  id: '/_authenticated/setores',
   path: '/setores',
   getParentRoute: () => rootRouteImport,
 } as any)
-const BuscarRoute = BuscarRouteImport.update({
-  id: '/buscar',
+const AuthenticatedBuscarRoute = AuthenticatedBuscarRouteImport.update({
+  id: '/_authenticated/buscar',
   path: '/buscar',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const VagaIdRoute = VagaIdRouteImport.update({
-  id: '/vaga/$id',
+const AuthenticatedVagaIdRoute = AuthenticatedVagaIdRouteImport.update({
+  id: '/_authenticated/vaga/$id',
   path: '/vaga/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
-const SetorIdRoute = SetorIdRouteImport.update({
-  id: '/setor/$id',
+const AuthenticatedSetorIdRoute = AuthenticatedSetorIdRouteImport.update({
+  id: '/_authenticated/setor/$id',
   path: '/setor/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
-  '/buscar': typeof BuscarRoute
-  '/setores': typeof SetoresRoute
-  '/setor/$id': typeof SetorIdRoute
-  '/vaga/$id': typeof VagaIdRoute
+  '/buscar': typeof AuthenticatedBuscarRoute
+  '/setores': typeof AuthenticatedSetoresRoute
+  '/setor/$id': typeof AuthenticatedSetorIdRoute
+  '/vaga/$id': typeof AuthenticatedVagaIdRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '/buscar': typeof BuscarRoute
-  '/setores': typeof SetoresRoute
-  '/setor/$id': typeof SetorIdRoute
-  '/vaga/$id': typeof VagaIdRoute
+  '/buscar': typeof AuthenticatedBuscarRoute
+  '/setores': typeof AuthenticatedSetoresRoute
+  '/setor/$id': typeof AuthenticatedSetorIdRoute
+  '/vaga/$id': typeof AuthenticatedVagaIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
-  '/buscar': typeof BuscarRoute
-  '/setores': typeof SetoresRoute
-  '/setor/$id': typeof SetorIdRoute
-  '/vaga/$id': typeof VagaIdRoute
+  '/_authenticated/buscar': typeof AuthenticatedBuscarRoute
+  '/_authenticated/setores': typeof AuthenticatedSetoresRoute
+  '/_authenticated/setor/$id': typeof AuthenticatedSetorIdRoute
+  '/_authenticated/vaga/$id': typeof AuthenticatedVagaIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/buscar' | '/setores' | '/setor/$id' | '/vaga/$id'
+  fullPaths: '/buscar' | '/setores' | '/setor/$id' | '/vaga/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/buscar' | '/setores' | '/setor/$id' | '/vaga/$id'
-  id: '__root__' | '/' | '/buscar' | '/setores' | '/setor/$id' | '/vaga/$id'
+  to: '/buscar' | '/setores' | '/setor/$id' | '/vaga/$id'
+  id:
+    | '__root__'
+    | '/_authenticated/buscar'
+    | '/_authenticated/setores'
+    | '/_authenticated/setor/$id'
+    | '/_authenticated/vaga/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
-  BuscarRoute: typeof BuscarRoute
-  SetoresRoute: typeof SetoresRoute
-  SetorIdRoute: typeof SetorIdRoute
-  VagaIdRoute: typeof VagaIdRoute
+  AuthenticatedBuscarRoute: typeof AuthenticatedBuscarRoute
+  AuthenticatedSetoresRoute: typeof AuthenticatedSetoresRoute
+  AuthenticatedSetorIdRoute: typeof AuthenticatedSetorIdRoute
+  AuthenticatedVagaIdRoute: typeof AuthenticatedVagaIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/setores': {
-      id: '/setores'
+    '/_authenticated/setores': {
+      id: '/_authenticated/setores'
       path: '/setores'
       fullPath: '/setores'
-      preLoaderRoute: typeof SetoresRouteImport
+      preLoaderRoute: typeof AuthenticatedSetoresRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/buscar': {
-      id: '/buscar'
+    '/_authenticated/buscar': {
+      id: '/_authenticated/buscar'
       path: '/buscar'
       fullPath: '/buscar'
-      preLoaderRoute: typeof BuscarRouteImport
+      preLoaderRoute: typeof AuthenticatedBuscarRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/vaga/$id': {
-      id: '/vaga/$id'
+    '/_authenticated/vaga/$id': {
+      id: '/_authenticated/vaga/$id'
       path: '/vaga/$id'
       fullPath: '/vaga/$id'
-      preLoaderRoute: typeof VagaIdRouteImport
+      preLoaderRoute: typeof AuthenticatedVagaIdRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/setor/$id': {
-      id: '/setor/$id'
+    '/_authenticated/setor/$id': {
+      id: '/_authenticated/setor/$id'
       path: '/setor/$id'
       fullPath: '/setor/$id'
-      preLoaderRoute: typeof SetorIdRouteImport
+      preLoaderRoute: typeof AuthenticatedSetorIdRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
-  BuscarRoute: BuscarRoute,
-  SetoresRoute: SetoresRoute,
-  SetorIdRoute: SetorIdRoute,
-  VagaIdRoute: VagaIdRoute,
+  AuthenticatedBuscarRoute: AuthenticatedBuscarRoute,
+  AuthenticatedSetoresRoute: AuthenticatedSetoresRoute,
+  AuthenticatedSetorIdRoute: AuthenticatedSetorIdRoute,
+  AuthenticatedVagaIdRoute: AuthenticatedVagaIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

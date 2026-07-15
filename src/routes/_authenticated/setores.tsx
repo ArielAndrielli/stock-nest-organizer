@@ -30,7 +30,7 @@ import {
 import { toast } from "sonner";
 import { useSetores, useSaveSetor, useDeleteSetor, type Setor } from "@/lib/queries";
 
-export const Route = createFileRoute("/setores")({
+export const Route = createFileRoute("/_authenticated/setores")({
   head: () => ({
     meta: [
       { title: "Setores · Estoque" },
