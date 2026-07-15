@@ -377,3 +377,75 @@ export function statusLabel(s: CapacityStatus): { label: string; color: string; 
       return { label: "Sem limite", color: "text-muted-foreground bg-muted", dot: "bg-muted-foreground" };
   }
 }
+
+// ---------- HISTORICO ----------
+export type HistoricoEvento = {
+  id: string;
+  criado_em: string;
+  usuario_id: string | null;
+  usuario_email: string | null;
+  acao: string;
+  entidade: string;
+  entidade_id: string | null;
+  entidade_nome: string | null;
+  detalhes: unknown;
+};
+
+export function useHistorico() {
+  return useQuery({
+    queryKey: ["historico"],
+    queryFn: async (): Promise<HistoricoEvento[]> => {
+      const { data, error } = await sb
+        .from("historico_eventos")
+        .select("*")
+        .order("criado_em", { ascending: false });
+      if (error) throw error;
+      return (data ?? []) as HistoricoEvento[];
+    },
+  });
+}
+
+// ---------- USUARIOS ----------
+export type UserRow = {
+  id: string;
+  email: string | null;
+  nome_exibicao: string | null;
+  role: "administrador" | "operador" | "visitante";
+};
+
+export function useUsuarios() {
+  return useQuery({
+    queryKey: ["usuarios"],
+    queryFn: async (): Promise<UserRow[]> => {
+      const [{ data: profs, error: e1 }, { data: roles, error: e2 }] = await Promise.all([
+        sb.from("profiles").select("id, email, nome_exibicao"),
+        sb.from("user_roles").select("user_id, role"),
+      ]);
+      if (e1) throw e1;
+      if (e2) throw e2;
+      const rank = { administrador: 3, operador: 2, visitante: 1 } as const;
+      const map = new Map<string, UserRow["role"]>();
+      for (const r of (roles ?? []) as { user_id: string; role: UserRow["role"] }[]) {
+        const cur = map.get(r.user_id);
+        if (!cur || rank[r.role] > rank[cur]) map.set(r.user_id, r.role);
+      }
+      return ((profs ?? []) as { id: string; email: string | null; nome_exibicao: string | null }[]).map((p) => ({
+        ...p,
+        role: map.get(p.id) ?? "visitante",
+      }));
+    },
+  });
+}
+
+export function useSetUserRole() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ userId, role }: { userId: string; role: UserRow["role"] }) => {
+      const { error: eDel } = await sb.from("user_roles").delete().eq("user_id", userId);
+      if (eDel) throw eDel;
+      const { error } = await sb.from("user_roles").insert({ user_id: userId, role });
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["usuarios"] }),
+  });
+}
