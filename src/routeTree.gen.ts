@@ -13,6 +13,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
 import { Route as AuthenticatedSetoresRouteImport } from './routes/_authenticated/setores'
+import { Route as AuthenticatedItensRouteImport } from './routes/_authenticated/itens'
 import { Route as AuthenticatedHistoricoRouteImport } from './routes/_authenticated/historico'
 import { Route as AuthenticatedEtiquetasRouteImport } from './routes/_authenticated/etiquetas'
 import { Route as AuthenticatedBuscarRouteImport } from './routes/_authenticated/buscar'
@@ -38,6 +39,11 @@ const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
 const AuthenticatedSetoresRoute = AuthenticatedSetoresRouteImport.update({
   id: '/setores',
   path: '/setores',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedItensRoute = AuthenticatedItensRouteImport.update({
+  id: '/itens',
+  path: '/itens',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedHistoricoRoute = AuthenticatedHistoricoRouteImport.update({
@@ -83,6 +89,7 @@ export interface FileRoutesByFullPath {
   '/buscar': typeof AuthenticatedBuscarRoute
   '/etiquetas': typeof AuthenticatedEtiquetasRoute
   '/historico': typeof AuthenticatedHistoricoRoute
+  '/itens': typeof AuthenticatedItensRoute
   '/setores': typeof AuthenticatedSetoresRoute
   '/admin/usuarios': typeof AuthenticatedAdminUsuariosRoute
   '/caixa/$id': typeof AuthenticatedCaixaIdRoute
@@ -94,6 +101,7 @@ export interface FileRoutesByTo {
   '/buscar': typeof AuthenticatedBuscarRoute
   '/etiquetas': typeof AuthenticatedEtiquetasRoute
   '/historico': typeof AuthenticatedHistoricoRoute
+  '/itens': typeof AuthenticatedItensRoute
   '/setores': typeof AuthenticatedSetoresRoute
   '/': typeof AuthenticatedIndexRoute
   '/admin/usuarios': typeof AuthenticatedAdminUsuariosRoute
@@ -108,6 +116,7 @@ export interface FileRoutesById {
   '/_authenticated/buscar': typeof AuthenticatedBuscarRoute
   '/_authenticated/etiquetas': typeof AuthenticatedEtiquetasRoute
   '/_authenticated/historico': typeof AuthenticatedHistoricoRoute
+  '/_authenticated/itens': typeof AuthenticatedItensRoute
   '/_authenticated/setores': typeof AuthenticatedSetoresRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/admin/usuarios': typeof AuthenticatedAdminUsuariosRoute
@@ -123,6 +132,7 @@ export interface FileRouteTypes {
     | '/buscar'
     | '/etiquetas'
     | '/historico'
+    | '/itens'
     | '/setores'
     | '/admin/usuarios'
     | '/caixa/$id'
@@ -134,6 +144,7 @@ export interface FileRouteTypes {
     | '/buscar'
     | '/etiquetas'
     | '/historico'
+    | '/itens'
     | '/setores'
     | '/'
     | '/admin/usuarios'
@@ -147,6 +158,7 @@ export interface FileRouteTypes {
     | '/_authenticated/buscar'
     | '/_authenticated/etiquetas'
     | '/_authenticated/historico'
+    | '/_authenticated/itens'
     | '/_authenticated/setores'
     | '/_authenticated/'
     | '/_authenticated/admin/usuarios'
@@ -188,6 +200,13 @@ declare module '@tanstack/react-router' {
       path: '/setores'
       fullPath: '/setores'
       preLoaderRoute: typeof AuthenticatedSetoresRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/itens': {
+      id: '/_authenticated/itens'
+      path: '/itens'
+      fullPath: '/itens'
+      preLoaderRoute: typeof AuthenticatedItensRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/historico': {
@@ -246,6 +265,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedBuscarRoute: typeof AuthenticatedBuscarRoute
   AuthenticatedEtiquetasRoute: typeof AuthenticatedEtiquetasRoute
   AuthenticatedHistoricoRoute: typeof AuthenticatedHistoricoRoute
+  AuthenticatedItensRoute: typeof AuthenticatedItensRoute
   AuthenticatedSetoresRoute: typeof AuthenticatedSetoresRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedAdminUsuariosRoute: typeof AuthenticatedAdminUsuariosRoute
@@ -258,6 +278,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedBuscarRoute: AuthenticatedBuscarRoute,
   AuthenticatedEtiquetasRoute: AuthenticatedEtiquetasRoute,
   AuthenticatedHistoricoRoute: AuthenticatedHistoricoRoute,
+  AuthenticatedItensRoute: AuthenticatedItensRoute,
   AuthenticatedSetoresRoute: AuthenticatedSetoresRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
   AuthenticatedAdminUsuariosRoute: AuthenticatedAdminUsuariosRoute,
@@ -276,13 +297,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
