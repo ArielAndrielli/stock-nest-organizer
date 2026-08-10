@@ -1,67 +1,60 @@
-# Fase 2 — Autenticação, Histórico e QR Codes
+# Módulo "Cadastro de Itens"
 
-## 1. Autenticação (item 7)
+Novo módulo autenticado em `/itens`, com listagem em Grid e Cards, pesquisa, filtros, colunas configuráveis por usuário, detalhes do item e importação real de Excel de ponta a ponta. Nada do que já existe (Setor → Vaga → Caixa, histórico, etiquetas, usuários) é alterado.
 
-**Provedores:** Email/senha + Google (padrão Lovable Cloud). Auto-confirmação de email ativada para facilitar testes.
+## Banco de dados
 
-**Três papéis** (tabela `user_roles` separada com enum `app_role`, função `has_role` SECURITY DEFINER — padrão seguro):
-- **Administrador** — acesso total (CRUD em setores/vagas/caixas, mover, gerenciar usuários).
-- **Operador** — cadastrar, editar, mover caixas. Não exclui.
-- **Visitante** — somente leitura.
+Três tabelas novas, seguindo o padrão atual (RLS + GRANT + papéis administrador/operador/visitante):
 
-**Primeiro usuário** que se cadastrar vira Administrador automaticamente (trigger). Demais entram como Visitante e o Admin promove pela tela `/admin/usuarios`.
+- **itens** — campos fixos: `codigo_interno` (inteiro, identificador único), `referencia`, `descricao`, `marca`, `setor`, `tipo_item`, `status`, `imagem_url`, mais uma coluna `extras` (JSON) que guarda **todos** os demais campos vindos do Excel sem precisar alterar o banco.
+- **item_campos** — catálogo de campos: rótulo, chave, se é fixo ou vem do `extras`, se é filtrável, ordem. Alimentado automaticamente quando a importação encontra colunas novas. É isso que torna "Configurar Colunas" e os filtros dinâmicos.
+- **item_preferencias** — preferências por usuário: colunas visíveis, ordem das colunas, modo Grid/Cards.
 
-**RLS reformulada** nas 4 tabelas existentes (hoje liberadas para `public`):
-- SELECT: qualquer usuário autenticado.
-- INSERT/UPDATE: Administrador ou Operador.
-- DELETE: só Administrador.
-- `movimentacoes_caixa` INSERT: Administrador ou Operador.
+Índices para performance: único em `codigo_interno`, índices em marca/setor/tipo/status e índice de busca textual sobre referência + descrição + marca + setor. Leitura para qualquer usuário logado; criar/editar para operador e administrador; excluir só administrador.
 
-**Rotas:**
-- `/auth` — login + cadastro (pública).
-- Todo o resto passa para `src/routes/_authenticated/` (gate gerenciado pela integração, `ssr: false`, redireciona pra `/auth`).
-- Header ganha avatar + menu com "Sair" e (se admin) link "Usuários".
+## Tela principal `/itens`
 
-**UI condicional:** botões de criar/editar/excluir/mover escondidos conforme o papel via hook `usePermissions()`. Visitante vê tudo em modo leitura.
+Cabeçalho: título "Cadastro de Itens" + `[Pesquisar] [Filtros] [Configurar Colunas] [Grid/Cards] [Importar Excel]`, no mesmo estilo visual do sistema.
 
-## 2. Histórico de alterações (item 6)
+- **Grid**: cabeçalho fixo na rolagem, ordenação clicando na coluna, rolagem horizontal, menu ⋮ por linha (Visualizar / Editar / Excluir com confirmação) e paginação. Busca, filtros e ordenação são feitos **no banco**, nunca carregando tudo no navegador.
+- **Cards**: imagem de capa em proporção fixa (placeholder quando não houver), referência e descrição curta, grade responsiva, clique abre os detalhes.
+- **Configurar Colunas**: painel lateral listando todos os campos do catálogo com checkbox visível/oculto, botão "Restaurar padrão". Padrão: Código Interno, Referência, Descrição, Marca, Setor. Salvo por usuário.
+- **Filtros**: Marca, Setor, Tipo, Status (e demais campos marcados como filtráveis), combináveis, com "Limpar filtros".
+- **Detalhes**: modal com "Informações principais" e "Informações adicionais" (todos os campos do `extras`), preparado para edição.
+- **Estados**: carregando (skeletons), sem resultados, base vazia (com botão Importar Excel), erro com "Tentar novamente".
+- Alternar Grid/Cards preserva pesquisa, filtros e ordenação (guardados na URL).
 
-Nova tabela `historico_eventos`:
-- `id`, `criado_em`, `usuario_id`, `usuario_email`, `acao` (`criar|editar|excluir|mover|imagem`), `entidade` (`setor|vaga|caixa`), `entidade_id`, `entidade_nome`, `detalhes jsonb` (campos alterados, vaga origem/destino, etc).
+## Importação de Excel (funcional, ponta a ponta)
 
-Preenchida por **triggers** em `setores`, `vagas`, `caixas` e `movimentacoes_caixa` — captura automaticamente criação, edição (incluindo troca de imagem via diff em `imagem_url`), exclusão e movimentação. Sem depender do código da UI.
+Assistente em etapas dentro de um modal "Importar Cadastro via Excel":
 
-**Tela `/historico`** (todos autenticados podem ver):
-- Timeline agrupada por dia, filtros por entidade, ação e usuário, busca por nome/id.
-- Cada card mostra usuário, ação, entidade afetada e detalhes (ex.: "Caixa X movida de Vaga A → Vaga B", "Imagem trocada").
+1. **Upload** — arrastar ou selecionar, valida `.xlsx`/`.xls`, mostra nome e tamanho, permite remover/trocar.
+2. **Leitura** — a planilha é lida no navegador e todas as colunas são identificadas, inclusive as que não existem hoje no sistema.
+3. **Mapeamento** — tabela "Coluna do Excel → Campo do sistema" com sugestão automática por similaridade de nome; o usuário pode corrigir, criar o campo como adicional (vai para `extras`) ou ignorar a coluna.
+4. **Validação e prévia** — primeiras 50 linhas, marcando válidos, a atualizar (código interno já existente) e com erro (obrigatório ausente, tipo inválido, duplicado no arquivo).
+5. **Confirmação** — resumo "Novos X / Atualizações Y / Com erro Z".
+6. **Processamento** — envio em lotes para o servidor com barra de progresso e contadores; linhas inválidas são puladas, as válidas são gravadas.
+7. **Resultado** — total processado, novos, atualizados, erros; lista de erros com linha do Excel, código, campo e motivo, e download do relatório de erros em CSV.
 
-Também exibimos um mini-histórico ("Últimas alterações") no detalhe de cada Setor/Vaga/Caixa.
+Ao concluir, o modal fecha e a listagem recarrega sozinha com os novos totais.
 
-## 3. QR Codes e etiquetas (item 8)
+## Exportação
 
-Biblioteca: `qrcode.react` (SVG, sem dependências nativas) + `jsbarcode` para o código de barras (Code128 do id/código).
-
-**QR code embutido** no card e no cabeçalho de cada detalhe (Setor/Vaga/Caixa). O conteúdo é a URL absoluta da própria página (`/setor/$id`, `/vaga/$id`, `/caixa/$id`) — ao escanear, abre direto o cadastro.
-
-**Nova rota `/caixa/$id`** (faltava): mostra detalhe da caixa (necessário para o QR da caixa apontar pra algum lugar).
-
-**Tela de impressão `/etiquetas`**:
-- Seleção de itens (setores, vagas, caixas) com filtros por setor/vaga.
-- Escolha do tamanho (pequena 40×30mm, média 60×40mm, grande A6).
-- Cada etiqueta contém: **nome**, **QR Code** e **código de barras** (Code128).
-- Layout em grid otimizado para papel A4, com `@media print` limpando cabeçalho/menu. Botão "Imprimir" chama `window.print()`.
-
-## Fora do escopo desta fase
-
-Nada — Fase 2 fecha os itens 6, 7 e 8, completando os 8 pontos originais.
+Botão "Exportar Excel" respeitando pesquisa, filtros e colunas visíveis, com opção de exportar todos os campos.
 
 ## Detalhes técnicos
 
-- Novas tabelas com GRANTs a `authenticated` e `service_role`; `anon` sem acesso.
-- Função `has_role(_user_id uuid, _role app_role)` SECURITY DEFINER + trigger `handle_new_user` que cria linha em `profiles` e concede papel (`admin` se for o primeiro usuário, senão `visitante`).
-- Reset das policies antigas `*_all` e criação das novas por papel.
-- `src/lib/queries.ts` ganha hooks `useHistorico`, `useUsuarios`, `usePromoteUser`, `useCurrentRole`.
-- `AppShell` passa a exigir sessão; adiciona menu de usuário e link "Histórico"/"Usuários"/"Etiquetas".
-- Estilos de impressão em `src/styles.css` (`@media print { .no-print { display:none } }`).
+- Rotas: `src/routes/_authenticated/itens.tsx` (+ componentes em `src/components/itens/`), link "Itens" no `AppShell`.
+- Leitura/escrita via TanStack Query + client Supabase, no mesmo padrão de `src/lib/queries.ts`; paginação por `range()` e ordenação/filtro por query no banco.
+- Upsert da importação por `codigo_interno` em lotes (~500 linhas), evitando duplicidade; campos não mapeados vão para `extras` e são registrados em `item_campos`.
+- Parsing do Excel com a biblioteca SheetJS (`xlsx`) no navegador — evita subir arquivos grandes e mantém o servidor leve.
+- Permissões reaproveitam `usePermissions()`; visitante apenas consulta, importação/edição para operador e administrador, exclusão só administrador.
+- Tipos gerados serão regenerados após a migração; o código do módulo é escrito depois disso.
 
-Se aprovar, começo pela migração (auth + histórico + policies), depois telas de login/gate/roles, depois QR codes e etiquetas.
+## Ordem de execução
+
+1. Migração das três tabelas, índices, RLS e GRANTs.
+2. Instalar `xlsx` e criar camada de dados/hooks do módulo.
+3. Tela principal com Grid, Cards, busca, filtros, colunas e detalhes.
+4. Assistente de importação completo + exportação.
+5. Verificação do fluxo no preview.
