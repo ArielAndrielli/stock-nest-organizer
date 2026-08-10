@@ -88,6 +88,120 @@ export type Database = {
         }
         Relationships: []
       }
+      item_campos: {
+        Row: {
+          atualizado_em: string
+          chave: string
+          criado_em: string
+          filtravel: boolean
+          fixo: boolean
+          id: string
+          ordem: number
+          rotulo: string
+          tipo: string
+          visivel_padrao: boolean
+        }
+        Insert: {
+          atualizado_em?: string
+          chave: string
+          criado_em?: string
+          filtravel?: boolean
+          fixo?: boolean
+          id?: string
+          ordem?: number
+          rotulo: string
+          tipo?: string
+          visivel_padrao?: boolean
+        }
+        Update: {
+          atualizado_em?: string
+          chave?: string
+          criado_em?: string
+          filtravel?: boolean
+          fixo?: boolean
+          id?: string
+          ordem?: number
+          rotulo?: string
+          tipo?: string
+          visivel_padrao?: boolean
+        }
+        Relationships: []
+      }
+      item_preferencias: {
+        Row: {
+          atualizado_em: string
+          colunas_visiveis: string[]
+          criado_em: string
+          id: string
+          modo_visualizacao: string
+          ordem_colunas: string[]
+          user_id: string
+        }
+        Insert: {
+          atualizado_em?: string
+          colunas_visiveis?: string[]
+          criado_em?: string
+          id?: string
+          modo_visualizacao?: string
+          ordem_colunas?: string[]
+          user_id: string
+        }
+        Update: {
+          atualizado_em?: string
+          colunas_visiveis?: string[]
+          criado_em?: string
+          id?: string
+          modo_visualizacao?: string
+          ordem_colunas?: string[]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      itens: {
+        Row: {
+          atualizado_em: string
+          codigo_interno: number
+          criado_em: string
+          descricao: string | null
+          extras: Json
+          id: string
+          imagem_url: string | null
+          marca: string | null
+          referencia: string | null
+          setor: string | null
+          status: string | null
+          tipo_item: string | null
+        }
+        Insert: {
+          atualizado_em?: string
+          codigo_interno: number
+          criado_em?: string
+          descricao?: string | null
+          extras?: Json
+          id?: string
+          imagem_url?: string | null
+          marca?: string | null
+          referencia?: string | null
+          setor?: string | null
+          status?: string | null
+          tipo_item?: string | null
+        }
+        Update: {
+          atualizado_em?: string
+          codigo_interno?: number
+          criado_em?: string
+          descricao?: string | null
+          extras?: Json
+          id?: string
+          imagem_url?: string | null
+          marca?: string | null
+          referencia?: string | null
+          setor?: string | null
+          status?: string | null
+          tipo_item?: string | null
+        }
+        Relationships: []
+      }
       movimentacoes_caixa: {
         Row: {
           caixa_id: string

@@ -1,6 +1,6 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { Boxes, ClipboardList, LayoutDashboard, LogOut, PackageSearch, Printer, Search, Users } from "lucide-react";
+import { Boxes, ClipboardList, LayoutDashboard, LogOut, Package, PackageSearch, Printer, Search, Users } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -154,7 +154,9 @@ export function AppShell({ children }: { children: ReactNode }) {
           <nav className="flex flex-wrap items-center gap-1">
             <NavLink to="/" icon={<LayoutDashboard className="h-4 w-4" />} label="Dashboard" />
             <NavLink to="/setores" icon={<PackageSearch className="h-4 w-4" />} label="Setores" />
+            <NavLink to="/itens" icon={<Package className="h-4 w-4" />} label="Itens" />
             <NavLink to="/historico" icon={<ClipboardList className="h-4 w-4" />} label="Histórico" />
+
             <NavLink to="/etiquetas" icon={<Printer className="h-4 w-4" />} label="Etiquetas" />
           </nav>
           <div className="flex-1" />
