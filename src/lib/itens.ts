@@ -169,45 +169,68 @@ export type ItensQueryArgs = {
   porPagina: number;
 };
 
+type FiltroArgs = Pick<ItensQueryArgs, "q" | "filtros" | "ordenarPor" | "ordem">;
+
+function montarQuery(args: FiltroArgs, contar: boolean) {
+  let query = contar
+    ? sb.from("itens").select("*", { count: "exact" })
+    : sb.from("itens").select("*");
+
+  const termo = args.q.trim();
+  if (termo) {
+    const like = `%${termo.replace(/[%,]/g, " ")}%`;
+    const ors = [
+      `referencia.ilike.${like}`,
+      `descricao.ilike.${like}`,
+      `marca.ilike.${like}`,
+      `setor.ilike.${like}`,
+      `tipo_item.ilike.${like}`,
+      `status.ilike.${like}`,
+    ];
+    if (/^\d+$/.test(termo)) ors.push(`codigo_interno.eq.${termo}`);
+    query = query.or(ors.join(","));
+  }
+
+  for (const [chave, valor] of Object.entries(args.filtros)) {
+    if (!valor) continue;
+    if (isFixo(chave)) query = query.eq(chave, valor);
+    else query = query.eq(`extras->>${chave}`, valor);
+  }
+
+  const col = isFixo(args.ordenarPor) ? args.ordenarPor : `extras->>${args.ordenarPor}`;
+  return query.order(col, { ascending: args.ordem === "asc", nullsFirst: false });
+}
+
 export function useItens(args: ItensQueryArgs) {
   return useQuery({
     queryKey: ["itens", args],
     queryFn: async (): Promise<{ rows: Item[]; total: number }> => {
-      let query = sb.from("itens").select("*", { count: "exact" });
-
-      const termo = args.q.trim();
-      if (termo) {
-        const like = `%${termo.replace(/[%,]/g, " ")}%`;
-        const ors = [
-          `referencia.ilike.${like}`,
-          `descricao.ilike.${like}`,
-          `marca.ilike.${like}`,
-          `setor.ilike.${like}`,
-          `tipo_item.ilike.${like}`,
-          `status.ilike.${like}`,
-        ];
-        if (/^\d+$/.test(termo)) ors.push(`codigo_interno.eq.${termo}`);
-        query = query.or(ors.join(","));
-      }
-
-      for (const [chave, valor] of Object.entries(args.filtros)) {
-        if (!valor) continue;
-        if (isFixo(chave)) query = query.eq(chave, valor);
-        else query = query.eq(`extras->>${chave}`, valor);
-      }
-
-      const col = isFixo(args.ordenarPor) ? args.ordenarPor : `extras->>${args.ordenarPor}`;
-      query = query.order(col, { ascending: args.ordem === "asc", nullsFirst: false });
-
       const from = (args.pagina - 1) * args.porPagina;
-      query = query.range(from, from + args.porPagina - 1);
-
+      const query = montarQuery(args, true).range(from, from + args.porPagina - 1);
       const { data, error, count } = await query;
       if (error) throw error;
       return { rows: (data ?? []) as Item[], total: count ?? 0 };
     },
   });
 }
+
+export async function buscarTodosItens(
+  args: FiltroArgs,
+  onProgresso?: (carregados: number) => void,
+): Promise<Item[]> {
+  const lote = 1000;
+  const todos: Item[] = [];
+  for (let inicio = 0; ; inicio += lote) {
+    const { data, error } = await montarQuery(args, false).range(inicio, inicio + lote - 1);
+    if (error) throw error;
+    const rows = (data ?? []) as Item[];
+    todos.push(...rows);
+    onProgresso?.(todos.length);
+    if (rows.length < lote) break;
+  }
+  return todos;
+}
+
 
 export function useValoresDistintos(chave: string, ativo: boolean) {
   return useQuery({
