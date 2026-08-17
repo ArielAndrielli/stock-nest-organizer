@@ -129,14 +129,12 @@ export function usePrefs() {
     queryFn: async (): Promise<Prefs> => {
       const { data, error } = await sb
         .from("item_preferencias")
-        .select("colunas_visiveis, ordem_colunas, modo_visualizacao")
+        .select("colunas_visiveis, ordem_colunas, modo_visualizacao, por_pagina")
         .eq("user_id", user!.id)
         .maybeSingle();
       if (error) throw error;
-      if (!data) {
-        return { colunas_visiveis: COLUNAS_PADRAO, ordem_colunas: [], modo_visualizacao: "grid" };
-      }
-      return data as Prefs;
+      if (!data) return PREFS_PADRAO;
+      return { ...PREFS_PADRAO, ...(data as Partial<Prefs>) };
     },
   });
 }
@@ -146,23 +144,20 @@ export function useSavePrefs() {
   const { user } = useAuth();
   return useMutation({
     mutationFn: async (patch: Partial<Prefs>) => {
-      if (!user) return;
-      const atual =
-        (qc.getQueryData(["item-prefs", user.id]) as Prefs | undefined) ?? {
-          colunas_visiveis: COLUNAS_PADRAO,
-          ordem_colunas: [],
-          modo_visualizacao: "grid" as const,
-        };
+      if (!user) throw new Error("Sessão expirada.");
+      const atual = (qc.getQueryData(["item-prefs", user.id]) as Prefs | undefined) ?? PREFS_PADRAO;
       const next = { ...atual, ...patch };
       qc.setQueryData(["item-prefs", user.id], next);
       const { error } = await sb
         .from("item_preferencias")
         .upsert({ user_id: user.id, ...next }, { onConflict: "user_id" });
       if (error) throw error;
+      return next;
     },
     onSettled: () => qc.invalidateQueries({ queryKey: ["item-prefs"] }),
   });
 }
+
 
 // ---------- LISTAGEM ----------
 export type ItensQueryArgs = {
