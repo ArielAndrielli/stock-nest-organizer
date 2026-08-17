@@ -56,7 +56,18 @@ export type Prefs = {
   colunas_visiveis: string[];
   ordem_colunas: string[];
   modo_visualizacao: "grid" | "cards";
+  por_pagina: number;
 };
+
+export const PREFS_PADRAO: Prefs = {
+  colunas_visiveis: COLUNAS_PADRAO,
+  ordem_colunas: [],
+  modo_visualizacao: "grid",
+  por_pagina: 25,
+};
+
+export const OPCOES_POR_PAGINA = [10, 25, 50, 100, 200];
+
 
 export function isFixo(chave: string) {
   return (CAMPOS_FIXOS as readonly string[]).includes(chave);
