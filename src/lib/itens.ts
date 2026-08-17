@@ -56,7 +56,18 @@ export type Prefs = {
   colunas_visiveis: string[];
   ordem_colunas: string[];
   modo_visualizacao: "grid" | "cards";
+  por_pagina: number;
 };
+
+export const PREFS_PADRAO: Prefs = {
+  colunas_visiveis: COLUNAS_PADRAO,
+  ordem_colunas: [],
+  modo_visualizacao: "grid",
+  por_pagina: 25,
+};
+
+export const OPCOES_POR_PAGINA = [10, 25, 50, 100, 200];
+
 
 export function isFixo(chave: string) {
   return (CAMPOS_FIXOS as readonly string[]).includes(chave);
@@ -118,14 +129,12 @@ export function usePrefs() {
     queryFn: async (): Promise<Prefs> => {
       const { data, error } = await sb
         .from("item_preferencias")
-        .select("colunas_visiveis, ordem_colunas, modo_visualizacao")
+        .select("colunas_visiveis, ordem_colunas, modo_visualizacao, por_pagina")
         .eq("user_id", user!.id)
         .maybeSingle();
       if (error) throw error;
-      if (!data) {
-        return { colunas_visiveis: COLUNAS_PADRAO, ordem_colunas: [], modo_visualizacao: "grid" };
-      }
-      return data as Prefs;
+      if (!data) return PREFS_PADRAO;
+      return { ...PREFS_PADRAO, ...(data as Partial<Prefs>) };
     },
   });
 }
@@ -135,23 +144,20 @@ export function useSavePrefs() {
   const { user } = useAuth();
   return useMutation({
     mutationFn: async (patch: Partial<Prefs>) => {
-      if (!user) return;
-      const atual =
-        (qc.getQueryData(["item-prefs", user.id]) as Prefs | undefined) ?? {
-          colunas_visiveis: COLUNAS_PADRAO,
-          ordem_colunas: [],
-          modo_visualizacao: "grid" as const,
-        };
+      if (!user) throw new Error("Sessão expirada.");
+      const atual = (qc.getQueryData(["item-prefs", user.id]) as Prefs | undefined) ?? PREFS_PADRAO;
       const next = { ...atual, ...patch };
       qc.setQueryData(["item-prefs", user.id], next);
       const { error } = await sb
         .from("item_preferencias")
         .upsert({ user_id: user.id, ...next }, { onConflict: "user_id" });
       if (error) throw error;
+      return next;
     },
     onSettled: () => qc.invalidateQueries({ queryKey: ["item-prefs"] }),
   });
 }
+
 
 // ---------- LISTAGEM ----------
 export type ItensQueryArgs = {
@@ -163,45 +169,68 @@ export type ItensQueryArgs = {
   porPagina: number;
 };
 
+type FiltroArgs = Pick<ItensQueryArgs, "q" | "filtros" | "ordenarPor" | "ordem">;
+
+function montarQuery(args: FiltroArgs, contar: boolean) {
+  let query = contar
+    ? sb.from("itens").select("*", { count: "exact" })
+    : sb.from("itens").select("*");
+
+  const termo = args.q.trim();
+  if (termo) {
+    const like = `%${termo.replace(/[%,]/g, " ")}%`;
+    const ors = [
+      `referencia.ilike.${like}`,
+      `descricao.ilike.${like}`,
+      `marca.ilike.${like}`,
+      `setor.ilike.${like}`,
+      `tipo_item.ilike.${like}`,
+      `status.ilike.${like}`,
+    ];
+    if (/^\d+$/.test(termo)) ors.push(`codigo_interno.eq.${termo}`);
+    query = query.or(ors.join(","));
+  }
+
+  for (const [chave, valor] of Object.entries(args.filtros)) {
+    if (!valor) continue;
+    if (isFixo(chave)) query = query.eq(chave, valor);
+    else query = query.eq(`extras->>${chave}`, valor);
+  }
+
+  const col = isFixo(args.ordenarPor) ? args.ordenarPor : `extras->>${args.ordenarPor}`;
+  return query.order(col, { ascending: args.ordem === "asc", nullsFirst: false });
+}
+
 export function useItens(args: ItensQueryArgs) {
   return useQuery({
     queryKey: ["itens", args],
     queryFn: async (): Promise<{ rows: Item[]; total: number }> => {
-      let query = sb.from("itens").select("*", { count: "exact" });
-
-      const termo = args.q.trim();
-      if (termo) {
-        const like = `%${termo.replace(/[%,]/g, " ")}%`;
-        const ors = [
-          `referencia.ilike.${like}`,
-          `descricao.ilike.${like}`,
-          `marca.ilike.${like}`,
-          `setor.ilike.${like}`,
-          `tipo_item.ilike.${like}`,
-          `status.ilike.${like}`,
-        ];
-        if (/^\d+$/.test(termo)) ors.push(`codigo_interno.eq.${termo}`);
-        query = query.or(ors.join(","));
-      }
-
-      for (const [chave, valor] of Object.entries(args.filtros)) {
-        if (!valor) continue;
-        if (isFixo(chave)) query = query.eq(chave, valor);
-        else query = query.eq(`extras->>${chave}`, valor);
-      }
-
-      const col = isFixo(args.ordenarPor) ? args.ordenarPor : `extras->>${args.ordenarPor}`;
-      query = query.order(col, { ascending: args.ordem === "asc", nullsFirst: false });
-
       const from = (args.pagina - 1) * args.porPagina;
-      query = query.range(from, from + args.porPagina - 1);
-
+      const query = montarQuery(args, true).range(from, from + args.porPagina - 1);
       const { data, error, count } = await query;
       if (error) throw error;
       return { rows: (data ?? []) as Item[], total: count ?? 0 };
     },
   });
 }
+
+export async function buscarTodosItens(
+  args: FiltroArgs,
+  onProgresso?: (carregados: number) => void,
+): Promise<Item[]> {
+  const lote = 1000;
+  const todos: Item[] = [];
+  for (let inicio = 0; ; inicio += lote) {
+    const { data, error } = await montarQuery(args, false).range(inicio, inicio + lote - 1);
+    if (error) throw error;
+    const rows = (data ?? []) as Item[];
+    todos.push(...rows);
+    onProgresso?.(todos.length);
+    if (rows.length < lote) break;
+  }
+  return todos;
+}
+
 
 export function useValoresDistintos(chave: string, ativo: boolean) {
   return useQuery({
