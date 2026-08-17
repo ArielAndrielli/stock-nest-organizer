@@ -135,6 +135,7 @@ export type Database = {
           id: string
           modo_visualizacao: string
           ordem_colunas: string[]
+          por_pagina: number
           user_id: string
         }
         Insert: {
@@ -144,6 +145,7 @@ export type Database = {
           id?: string
           modo_visualizacao?: string
           ordem_colunas?: string[]
+          por_pagina?: number
           user_id: string
         }
         Update: {
@@ -153,6 +155,7 @@ export type Database = {
           id?: string
           modo_visualizacao?: string
           ordem_colunas?: string[]
+          por_pagina?: number
           user_id?: string
         }
         Relationships: []
@@ -247,6 +250,96 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      ordem_itens: {
+        Row: {
+          criado_em: string
+          descricao: string | null
+          id: string
+          item_id: string | null
+          ordem_id: string
+          quantidade: number
+          referencia: string | null
+          tipo_material: string
+        }
+        Insert: {
+          criado_em?: string
+          descricao?: string | null
+          id?: string
+          item_id?: string | null
+          ordem_id: string
+          quantidade?: number
+          referencia?: string | null
+          tipo_material: string
+        }
+        Update: {
+          criado_em?: string
+          descricao?: string | null
+          id?: string
+          item_id?: string | null
+          ordem_id?: string
+          quantidade?: number
+          referencia?: string | null
+          tipo_material?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ordem_itens_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "itens"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ordem_itens_ordem_id_fkey"
+            columns: ["ordem_id"]
+            isOneToOne: false
+            referencedRelation: "ordens_producao"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ordens_producao: {
+        Row: {
+          atualizado_em: string
+          criado_em: string
+          criado_por: string | null
+          criado_por_email: string | null
+          descricao: string
+          id: string
+          numero: string
+          observacoes: string | null
+          quantidade: number
+          referencia: string
+          status: Database["public"]["Enums"]["status_ordem"]
+        }
+        Insert: {
+          atualizado_em?: string
+          criado_em?: string
+          criado_por?: string | null
+          criado_por_email?: string | null
+          descricao: string
+          id?: string
+          numero: string
+          observacoes?: string | null
+          quantidade?: number
+          referencia: string
+          status?: Database["public"]["Enums"]["status_ordem"]
+        }
+        Update: {
+          atualizado_em?: string
+          criado_em?: string
+          criado_por?: string | null
+          criado_por_email?: string | null
+          descricao?: string
+          id?: string
+          numero?: string
+          observacoes?: string | null
+          quantidade?: number
+          referencia?: string
+          status?: Database["public"]["Enums"]["status_ordem"]
+        }
+        Relationships: []
       }
       profiles: {
         Row: {
@@ -372,6 +465,12 @@ export type Database = {
     }
     Enums: {
       app_role: "administrador" | "operador" | "visitante"
+      status_ordem:
+        | "aguardando_separacao"
+        | "em_separacao"
+        | "separacao_concluida"
+        | "concluido"
+        | "cancelado"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -500,6 +599,13 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["administrador", "operador", "visitante"],
+      status_ordem: [
+        "aguardando_separacao",
+        "em_separacao",
+        "separacao_concluida",
+        "concluido",
+        "cancelado",
+      ],
     },
   },
 } as const
