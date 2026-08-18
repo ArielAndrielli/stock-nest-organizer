@@ -20,6 +20,7 @@ import { Route as AuthenticatedEtiquetasRouteImport } from './routes/_authentica
 import { Route as AuthenticatedBuscarRouteImport } from './routes/_authenticated/buscar'
 import { Route as AuthenticatedVagaIdRouteImport } from './routes/_authenticated/vaga.$id'
 import { Route as AuthenticatedSetorIdRouteImport } from './routes/_authenticated/setor.$id'
+import { Route as AuthenticatedOrdemIdRouteImport } from './routes/_authenticated/ordem.$id'
 import { Route as AuthenticatedCaixaIdRouteImport } from './routes/_authenticated/caixa.$id'
 import { Route as AuthenticatedAdminUsuariosRouteImport } from './routes/_authenticated/admin.usuarios'
 
@@ -77,6 +78,11 @@ const AuthenticatedSetorIdRoute = AuthenticatedSetorIdRouteImport.update({
   path: '/setor/$id',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedOrdemIdRoute = AuthenticatedOrdemIdRouteImport.update({
+  id: '/ordem/$id',
+  path: '/ordem/$id',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedCaixaIdRoute = AuthenticatedCaixaIdRouteImport.update({
   id: '/caixa/$id',
   path: '/caixa/$id',
@@ -100,6 +106,7 @@ export interface FileRoutesByFullPath {
   '/setores': typeof AuthenticatedSetoresRoute
   '/admin/usuarios': typeof AuthenticatedAdminUsuariosRoute
   '/caixa/$id': typeof AuthenticatedCaixaIdRoute
+  '/ordem/$id': typeof AuthenticatedOrdemIdRoute
   '/setor/$id': typeof AuthenticatedSetorIdRoute
   '/vaga/$id': typeof AuthenticatedVagaIdRoute
 }
@@ -114,6 +121,7 @@ export interface FileRoutesByTo {
   '/': typeof AuthenticatedIndexRoute
   '/admin/usuarios': typeof AuthenticatedAdminUsuariosRoute
   '/caixa/$id': typeof AuthenticatedCaixaIdRoute
+  '/ordem/$id': typeof AuthenticatedOrdemIdRoute
   '/setor/$id': typeof AuthenticatedSetorIdRoute
   '/vaga/$id': typeof AuthenticatedVagaIdRoute
 }
@@ -130,6 +138,7 @@ export interface FileRoutesById {
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/admin/usuarios': typeof AuthenticatedAdminUsuariosRoute
   '/_authenticated/caixa/$id': typeof AuthenticatedCaixaIdRoute
+  '/_authenticated/ordem/$id': typeof AuthenticatedOrdemIdRoute
   '/_authenticated/setor/$id': typeof AuthenticatedSetorIdRoute
   '/_authenticated/vaga/$id': typeof AuthenticatedVagaIdRoute
 }
@@ -146,6 +155,7 @@ export interface FileRouteTypes {
     | '/setores'
     | '/admin/usuarios'
     | '/caixa/$id'
+    | '/ordem/$id'
     | '/setor/$id'
     | '/vaga/$id'
   fileRoutesByTo: FileRoutesByTo
@@ -160,6 +170,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin/usuarios'
     | '/caixa/$id'
+    | '/ordem/$id'
     | '/setor/$id'
     | '/vaga/$id'
   id:
@@ -175,6 +186,7 @@ export interface FileRouteTypes {
     | '/_authenticated/'
     | '/_authenticated/admin/usuarios'
     | '/_authenticated/caixa/$id'
+    | '/_authenticated/ordem/$id'
     | '/_authenticated/setor/$id'
     | '/_authenticated/vaga/$id'
   fileRoutesById: FileRoutesById
@@ -263,6 +275,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSetorIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/ordem/$id': {
+      id: '/_authenticated/ordem/$id'
+      path: '/ordem/$id'
+      fullPath: '/ordem/$id'
+      preLoaderRoute: typeof AuthenticatedOrdemIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/caixa/$id': {
       id: '/_authenticated/caixa/$id'
       path: '/caixa/$id'
@@ -290,6 +309,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedAdminUsuariosRoute: typeof AuthenticatedAdminUsuariosRoute
   AuthenticatedCaixaIdRoute: typeof AuthenticatedCaixaIdRoute
+  AuthenticatedOrdemIdRoute: typeof AuthenticatedOrdemIdRoute
   AuthenticatedSetorIdRoute: typeof AuthenticatedSetorIdRoute
   AuthenticatedVagaIdRoute: typeof AuthenticatedVagaIdRoute
 }
@@ -304,6 +324,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
   AuthenticatedAdminUsuariosRoute: AuthenticatedAdminUsuariosRoute,
   AuthenticatedCaixaIdRoute: AuthenticatedCaixaIdRoute,
+  AuthenticatedOrdemIdRoute: AuthenticatedOrdemIdRoute,
   AuthenticatedSetorIdRoute: AuthenticatedSetorIdRoute,
   AuthenticatedVagaIdRoute: AuthenticatedVagaIdRoute,
 }
