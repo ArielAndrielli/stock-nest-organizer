@@ -91,8 +91,6 @@ export const Route = createFileRoute("/_authenticated/itens")({
   component: ItensPage,
 });
 
-const POR_PAGINA = 25;
-
 function ItensPage() {
   const { canEdit, canDelete } = usePermissions();
   const [q, setQ] = useState("");
@@ -104,6 +102,7 @@ function ItensPage() {
   const [openColunas, setOpenColunas] = useState(false);
   const [openFiltros, setOpenFiltros] = useState(false);
   const [openImport, setOpenImport] = useState(false);
+  const [openExport, setOpenExport] = useState(false);
   const [detalhe, setDetalhe] = useState<Item | null>(null);
   const [excluir, setExcluir] = useState<Item | null>(null);
 
@@ -113,8 +112,24 @@ function ItensPage() {
   const { data: total } = useTotalItens();
   const del = useDeleteItem();
 
-  const modo = prefs?.modo_visualizacao ?? "grid";
-  const visiveis = prefs?.colunas_visiveis?.length ? prefs.colunas_visiveis : COLUNAS_PADRAO;
+  const [prefsLocais, setPrefsLocais] = useState<Prefs>(PREFS_PADRAO);
+  const [prefsAlteradas, setPrefsAlteradas] = useState(false);
+
+  useEffect(() => {
+    if (prefs) {
+      setPrefsLocais(prefs);
+      setPrefsAlteradas(false);
+    }
+  }, [prefs]);
+
+  const atualizarPrefs = (patch: Partial<Prefs>) => {
+    setPrefsLocais((p) => ({ ...p, ...patch }));
+    setPrefsAlteradas(true);
+  };
+
+  const modo = prefsLocais.modo_visualizacao;
+  const porPagina = prefsLocais.por_pagina || 25;
+  const visiveis = prefsLocais.colunas_visiveis?.length ? prefsLocais.colunas_visiveis : COLUNAS_PADRAO;
 
   const colunas = useMemo(
     () => campos.filter((c) => visiveis.includes(c.chave)),
@@ -127,12 +142,12 @@ function ItensPage() {
     ordenarPor,
     ordem,
     pagina,
-    porPagina: POR_PAGINA,
+    porPagina,
   });
 
   const rows = data?.rows ?? [];
   const totalFiltrado = data?.total ?? 0;
-  const paginas = Math.max(1, Math.ceil(totalFiltrado / POR_PAGINA));
+  const paginas = Math.max(1, Math.ceil(totalFiltrado / porPagina));
   const filtrosAtivos = Object.values(filtros).filter(Boolean).length;
 
   const aplicarBusca = (valor: string) => {
@@ -149,18 +164,32 @@ function ItensPage() {
     setPagina(1);
   };
 
-  const exportar = (todosCampos: boolean) => {
-    const cols = todosCampos ? campos : colunas;
-    const dados = rows.map((r) => {
-      const o: Record<string, unknown> = {};
-      for (const c of cols) o[c.rotulo] = formatarValor(valorCampo(r, c.chave));
-      return o;
-    });
-    const ws = XLSX.utils.json_to_sheet(dados);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Itens");
-    XLSX.writeFile(wb, "itens.xlsx");
+  const salvarPrefs = async () => {
+    try {
+      await savePrefs.mutateAsync({
+        modo_visualizacao: prefsLocais.modo_visualizacao,
+        colunas_visiveis: prefsLocais.colunas_visiveis,
+        por_pagina: prefsLocais.por_pagina,
+      });
+      setPrefsAlteradas(false);
+      toast.success("Preferências salvas.");
+    } catch (e) {
+      toast.error((e as Error).message);
+    }
   };
+
+  const restaurarPrefs = async () => {
+    try {
+      await savePrefs.mutateAsync({ ...PREFS_PADRAO });
+      setPrefsLocais(PREFS_PADRAO);
+      setPrefsAlteradas(false);
+      setPagina(1);
+      toast.success("Preferências restauradas ao padrão.");
+    } catch (e) {
+      toast.error((e as Error).message);
+    }
+  };
+
 
   const confirmarExclusao = async () => {
     if (!excluir) return;
