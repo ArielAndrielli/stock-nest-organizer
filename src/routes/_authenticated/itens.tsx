@@ -47,8 +47,18 @@ import { ColunasSheet } from "@/components/itens/ColunasSheet";
 import { FiltrosSheet } from "@/components/itens/FiltrosSheet";
 import { ItemDetalhes } from "@/components/itens/ItemDetalhes";
 import { ImportarExcel } from "@/components/itens/ImportarExcel";
+import { ExportarDialog } from "@/components/itens/ExportarDialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   COLUNAS_PADRAO,
+  OPCOES_POR_PAGINA,
+  PREFS_PADRAO,
   formatarValor,
   useDeleteItem,
   useItemCampos,
@@ -58,6 +68,7 @@ import {
   useTotalItens,
   valorCampo,
   type Item,
+  type Prefs,
 } from "@/lib/itens";
 
 export const Route = createFileRoute("/_authenticated/itens")({
