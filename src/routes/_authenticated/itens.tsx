@@ -1,6 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
-import * as XLSX from "xlsx";
+import { useEffect, useMemo, useState } from "react";
 import {
   ArrowDown,
   ArrowUp,
@@ -13,7 +12,9 @@ import {
   MoreVertical,
   Package,
   RefreshCw,
+  RotateCcw,
   Rows3,
+  Save,
   Search,
   SlidersHorizontal,
   Trash2,
@@ -48,8 +49,18 @@ import { ColunasSheet } from "@/components/itens/ColunasSheet";
 import { FiltrosSheet } from "@/components/itens/FiltrosSheet";
 import { ItemDetalhes } from "@/components/itens/ItemDetalhes";
 import { ImportarExcel } from "@/components/itens/ImportarExcel";
+import { ExportarDialog } from "@/components/itens/ExportarDialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   COLUNAS_PADRAO,
+  OPCOES_POR_PAGINA,
+  PREFS_PADRAO,
   formatarValor,
   useDeleteItem,
   useItemCampos,
@@ -59,6 +70,7 @@ import {
   useTotalItens,
   valorCampo,
   type Item,
+  type Prefs,
 } from "@/lib/itens";
 
 export const Route = createFileRoute("/_authenticated/itens")({
@@ -81,8 +93,6 @@ export const Route = createFileRoute("/_authenticated/itens")({
   component: ItensPage,
 });
 
-const POR_PAGINA = 25;
-
 function ItensPage() {
   const { canEdit, canDelete } = usePermissions();
   const [q, setQ] = useState("");
@@ -94,6 +104,7 @@ function ItensPage() {
   const [openColunas, setOpenColunas] = useState(false);
   const [openFiltros, setOpenFiltros] = useState(false);
   const [openImport, setOpenImport] = useState(false);
+  const [openExport, setOpenExport] = useState(false);
   const [detalhe, setDetalhe] = useState<Item | null>(null);
   const [excluir, setExcluir] = useState<Item | null>(null);
 
@@ -103,8 +114,24 @@ function ItensPage() {
   const { data: total } = useTotalItens();
   const del = useDeleteItem();
 
-  const modo = prefs?.modo_visualizacao ?? "grid";
-  const visiveis = prefs?.colunas_visiveis?.length ? prefs.colunas_visiveis : COLUNAS_PADRAO;
+  const [prefsLocais, setPrefsLocais] = useState<Prefs>(PREFS_PADRAO);
+  const [prefsAlteradas, setPrefsAlteradas] = useState(false);
+
+  useEffect(() => {
+    if (prefs) {
+      setPrefsLocais(prefs);
+      setPrefsAlteradas(false);
+    }
+  }, [prefs]);
+
+  const atualizarPrefs = (patch: Partial<Prefs>) => {
+    setPrefsLocais((p) => ({ ...p, ...patch }));
+    setPrefsAlteradas(true);
+  };
+
+  const modo = prefsLocais.modo_visualizacao;
+  const porPagina = prefsLocais.por_pagina || 25;
+  const visiveis = prefsLocais.colunas_visiveis?.length ? prefsLocais.colunas_visiveis : COLUNAS_PADRAO;
 
   const colunas = useMemo(
     () => campos.filter((c) => visiveis.includes(c.chave)),
@@ -117,12 +144,12 @@ function ItensPage() {
     ordenarPor,
     ordem,
     pagina,
-    porPagina: POR_PAGINA,
+    porPagina,
   });
 
   const rows = data?.rows ?? [];
   const totalFiltrado = data?.total ?? 0;
-  const paginas = Math.max(1, Math.ceil(totalFiltrado / POR_PAGINA));
+  const paginas = Math.max(1, Math.ceil(totalFiltrado / porPagina));
   const filtrosAtivos = Object.values(filtros).filter(Boolean).length;
 
   const aplicarBusca = (valor: string) => {
@@ -139,18 +166,32 @@ function ItensPage() {
     setPagina(1);
   };
 
-  const exportar = (todosCampos: boolean) => {
-    const cols = todosCampos ? campos : colunas;
-    const dados = rows.map((r) => {
-      const o: Record<string, unknown> = {};
-      for (const c of cols) o[c.rotulo] = formatarValor(valorCampo(r, c.chave));
-      return o;
-    });
-    const ws = XLSX.utils.json_to_sheet(dados);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Itens");
-    XLSX.writeFile(wb, "itens.xlsx");
+  const salvarPrefs = async () => {
+    try {
+      await savePrefs.mutateAsync({
+        modo_visualizacao: prefsLocais.modo_visualizacao,
+        colunas_visiveis: prefsLocais.colunas_visiveis,
+        por_pagina: prefsLocais.por_pagina,
+      });
+      setPrefsAlteradas(false);
+      toast.success("Preferências salvas.");
+    } catch (e) {
+      toast.error((e as Error).message);
+    }
   };
+
+  const restaurarPrefs = async () => {
+    try {
+      await savePrefs.mutateAsync({ ...PREFS_PADRAO });
+      setPrefsLocais(PREFS_PADRAO);
+      setPrefsAlteradas(false);
+      setPagina(1);
+      toast.success("Preferências restauradas ao padrão.");
+    } catch (e) {
+      toast.error((e as Error).message);
+    }
+  };
+
 
   const confirmarExclusao = async () => {
     if (!excluir) return;
@@ -185,7 +226,7 @@ function ItensPage() {
             <div className="flex overflow-hidden rounded-md border">
               <button
                 type="button"
-                onClick={() => savePrefs.mutate({ modo_visualizacao: "grid" })}
+                onClick={() => atualizarPrefs({ modo_visualizacao: "grid" })}
                 className={cn("px-2.5 py-1.5 transition-colors", modo === "grid" ? "bg-primary text-primary-foreground" : "hover:bg-muted")}
                 aria-label="Visualizar em grade"
               >
@@ -193,24 +234,34 @@ function ItensPage() {
               </button>
               <button
                 type="button"
-                onClick={() => savePrefs.mutate({ modo_visualizacao: "cards" })}
+                onClick={() => atualizarPrefs({ modo_visualizacao: "cards" })}
                 className={cn("px-2.5 py-1.5 transition-colors", modo === "cards" ? "bg-primary text-primary-foreground" : "hover:bg-muted")}
                 aria-label="Visualizar em cards"
               >
                 <LayoutGrid className="h-4 w-4" />
               </button>
             </div>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="gap-2">
-                  <Download className="h-4 w-4" /> Exportar
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onSelect={() => exportar(false)}>Colunas visíveis</DropdownMenuItem>
-                <DropdownMenuItem onSelect={() => exportar(true)}>Todos os campos</DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <Button
+              variant={prefsAlteradas ? "default" : "outline"}
+              size="sm"
+              className="gap-2"
+              onClick={salvarPrefs}
+              disabled={savePrefs.isPending}
+            >
+              <Save className="h-4 w-4" /> Salvar preferências
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="gap-2"
+              onClick={restaurarPrefs}
+              disabled={savePrefs.isPending}
+            >
+              <RotateCcw className="h-4 w-4" /> Restaurar padrão
+            </Button>
+            <Button variant="outline" size="sm" className="gap-2" onClick={() => setOpenExport(true)}>
+              <Download className="h-4 w-4" /> Exportar
+            </Button>
             {canEdit && (
               <Button size="sm" className="gap-2" onClick={() => setOpenImport(true)}>
                 <Upload className="h-4 w-4" /> Importar Excel
@@ -378,7 +429,26 @@ function ItensPage() {
             <p className="text-sm text-muted-foreground">
               Página {pagina} de {paginas} · {totalFiltrado.toLocaleString("pt-BR")} resultados
             </p>
-            <div className="flex gap-2">
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">Por página</span>
+              <Select
+                value={String(porPagina)}
+                onValueChange={(v) => {
+                  atualizarPrefs({ por_pagina: Number(v) });
+                  setPagina(1);
+                }}
+              >
+                <SelectTrigger className="h-9 w-20">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {OPCOES_POR_PAGINA.map((n) => (
+                    <SelectItem key={n} value={String(n)}>
+                      {n}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <Button variant="outline" size="sm" disabled={pagina <= 1} onClick={() => setPagina((p) => p - 1)}>
                 <ChevronLeft className="h-4 w-4" /> Anterior
               </Button>
@@ -395,7 +465,15 @@ function ItensPage() {
         onOpenChange={setOpenColunas}
         campos={campos}
         visiveis={visiveis}
-        onChange={(next) => savePrefs.mutate({ colunas_visiveis: next })}
+        onChange={(next) => atualizarPrefs({ colunas_visiveis: next })}
+      />
+      <ExportarDialog
+        open={openExport}
+        onOpenChange={setOpenExport}
+        campos={campos}
+        colunasVisiveis={colunas}
+        linhasPagina={rows}
+        args={{ q: busca, filtros, ordenarPor, ordem }}
       />
       <FiltrosSheet
         open={openFiltros}
