@@ -224,7 +224,7 @@ function ItensPage() {
             <div className="flex overflow-hidden rounded-md border">
               <button
                 type="button"
-                onClick={() => savePrefs.mutate({ modo_visualizacao: "grid" })}
+                onClick={() => atualizarPrefs({ modo_visualizacao: "grid" })}
                 className={cn("px-2.5 py-1.5 transition-colors", modo === "grid" ? "bg-primary text-primary-foreground" : "hover:bg-muted")}
                 aria-label="Visualizar em grade"
               >
@@ -232,24 +232,34 @@ function ItensPage() {
               </button>
               <button
                 type="button"
-                onClick={() => savePrefs.mutate({ modo_visualizacao: "cards" })}
+                onClick={() => atualizarPrefs({ modo_visualizacao: "cards" })}
                 className={cn("px-2.5 py-1.5 transition-colors", modo === "cards" ? "bg-primary text-primary-foreground" : "hover:bg-muted")}
                 aria-label="Visualizar em cards"
               >
                 <LayoutGrid className="h-4 w-4" />
               </button>
             </div>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="gap-2">
-                  <Download className="h-4 w-4" /> Exportar
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onSelect={() => exportar(false)}>Colunas visíveis</DropdownMenuItem>
-                <DropdownMenuItem onSelect={() => exportar(true)}>Todos os campos</DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <Button
+              variant={prefsAlteradas ? "default" : "outline"}
+              size="sm"
+              className="gap-2"
+              onClick={salvarPrefs}
+              disabled={savePrefs.isPending}
+            >
+              <Save className="h-4 w-4" /> Salvar preferências
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="gap-2"
+              onClick={restaurarPrefs}
+              disabled={savePrefs.isPending}
+            >
+              <RotateCcw className="h-4 w-4" /> Restaurar padrão
+            </Button>
+            <Button variant="outline" size="sm" className="gap-2" onClick={() => setOpenExport(true)}>
+              <Download className="h-4 w-4" /> Exportar
+            </Button>
             {canEdit && (
               <Button size="sm" className="gap-2" onClick={() => setOpenImport(true)}>
                 <Upload className="h-4 w-4" /> Importar Excel
