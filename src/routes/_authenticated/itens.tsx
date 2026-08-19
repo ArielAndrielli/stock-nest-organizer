@@ -429,7 +429,26 @@ function ItensPage() {
             <p className="text-sm text-muted-foreground">
               Página {pagina} de {paginas} · {totalFiltrado.toLocaleString("pt-BR")} resultados
             </p>
-            <div className="flex gap-2">
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">Por página</span>
+              <Select
+                value={String(porPagina)}
+                onValueChange={(v) => {
+                  atualizarPrefs({ por_pagina: Number(v) });
+                  setPagina(1);
+                }}
+              >
+                <SelectTrigger className="h-9 w-20">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {OPCOES_POR_PAGINA.map((n) => (
+                    <SelectItem key={n} value={String(n)}>
+                      {n}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <Button variant="outline" size="sm" disabled={pagina <= 1} onClick={() => setPagina((p) => p - 1)}>
                 <ChevronLeft className="h-4 w-4" /> Anterior
               </Button>
@@ -446,7 +465,15 @@ function ItensPage() {
         onOpenChange={setOpenColunas}
         campos={campos}
         visiveis={visiveis}
-        onChange={(next) => savePrefs.mutate({ colunas_visiveis: next })}
+        onChange={(next) => atualizarPrefs({ colunas_visiveis: next })}
+      />
+      <ExportarDialog
+        open={openExport}
+        onOpenChange={setOpenExport}
+        campos={campos}
+        colunasVisiveis={colunas}
+        linhasPagina={rows}
+        args={{ q: busca, filtros, ordenarPor, ordem }}
       />
       <FiltrosSheet
         open={openFiltros}
