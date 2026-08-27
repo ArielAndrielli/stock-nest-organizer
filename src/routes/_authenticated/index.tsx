@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Boxes, Layers, PackageOpen, PackagePlus } from "lucide-react";
+import { Boxes, ClipboardList, Layers, PackageOpen, PackagePlus } from "lucide-react";
 import {
   Bar, BarChart, CartesianGrid, Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis,
 } from "recharts";
@@ -7,6 +7,10 @@ import { AppShell } from "@/components/AppShell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDashboardData } from "@/lib/queries";
+import {
+  STATUS_ORDEM, STATUS_ROTULO, TIPOS_MATERIAL, TIPO_MATERIAL_ROTULO, useOrdensStats,
+} from "@/lib/ordens";
+
 
 export const Route = createFileRoute("/_authenticated/")({
   head: () => ({
