@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Boxes } from "lucide-react";
+import { Boxes, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,6 +8,42 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
+
+function CampoSenha({
+  id,
+  value,
+  onChange,
+  minLength,
+}: {
+  id: string;
+  value: string;
+  onChange: (v: string) => void;
+  minLength?: number;
+}) {
+  const [ver, setVer] = useState(false);
+  return (
+    <div className="relative">
+      <Input
+        id={id}
+        type={ver ? "text" : "password"}
+        className="pr-10"
+        minLength={minLength}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        required
+      />
+      <button
+        type="button"
+        onClick={() => setVer((v) => !v)}
+        aria-label={ver ? "Ocultar senha" : "Mostrar senha"}
+        className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-muted-foreground transition-colors hover:text-foreground"
+      >
+        {ver ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+      </button>
+    </div>
+  );
+}
+
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
