@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Boxes, Layers, PackageOpen, PackagePlus } from "lucide-react";
+import { Boxes, ClipboardList, Layers, PackageOpen, PackagePlus } from "lucide-react";
 import {
   Bar, BarChart, CartesianGrid, Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis,
 } from "recharts";
@@ -7,6 +7,10 @@ import { AppShell } from "@/components/AppShell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDashboardData } from "@/lib/queries";
+import {
+  STATUS_ORDEM, STATUS_ROTULO, TIPOS_MATERIAL, TIPO_MATERIAL_ROTULO, useOrdensStats,
+} from "@/lib/ordens";
+
 
 export const Route = createFileRoute("/_authenticated/")({
   head: () => ({
@@ -148,6 +152,128 @@ function Dashboard() {
           </Card>
         </div>
       )}
+
+      <OrdensStats />
     </AppShell>
   );
 }
+
+const CORES_STATUS: Record<string, string> = {
+  aguardando_separacao: "hsl(215 16% 60%)",
+  em_separacao: "hsl(217 91% 60%)",
+  separacao_concluida: "hsl(160 84% 39%)",
+  concluido: "hsl(142 71% 45%)",
+  cancelado: "hsl(0 84% 60%)",
+};
+
+function OrdensStats() {
+  const { data, isLoading } = useOrdensStats();
+  if (isLoading || !data) {
+    return <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-24 rounded-xl" />)}
+    </div>;
+  }
+
+  const { ordens, materiais } = data;
+  const total = ordens.length;
+  const emAberto = ordens.filter((o) => o.status === "aguardando_separacao" || o.status === "em_separacao").length;
+  const concluidas = ordens.filter((o) => o.status === "concluido").length;
+  const canceladas = ordens.filter((o) => o.status === "cancelado").length;
+
+  const porStatus = STATUS_ORDEM.map((s) => ({
+    name: STATUS_ROTULO[s],
+    value: ordens.filter((o) => o.status === s).length,
+    fill: CORES_STATUS[s],
+  })).filter((d) => d.value > 0);
+
+  const meses: { nome: string; ordens: number }[] = [];
+  const hoje = new Date();
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(hoje.getFullYear(), hoje.getMonth() - i, 1);
+    const nome = d.toLocaleDateString("pt-BR", { month: "short" });
+    const qtd = ordens.filter((o) => {
+      const c = new Date(o.criado_em);
+      return c.getFullYear() === d.getFullYear() && c.getMonth() === d.getMonth();
+    }).length;
+    meses.push({ nome, ordens: qtd });
+  }
+
+  const porTipo = TIPOS_MATERIAL.map((t) => ({
+    nome: TIPO_MATERIAL_ROTULO[t],
+    quantidade: materiais
+      .filter((m) => m.tipo_material === t)
+      .reduce((a, m) => a + Number(m.quantidade || 0), 0),
+  })).filter((d) => d.quantidade > 0);
+
+  return (
+    <section className="mt-10">
+      <div className="mb-4 flex items-end justify-between gap-3">
+        <div>
+          <h2 className="text-xl font-bold">Ordens de produção</h2>
+          <p className="text-sm text-muted-foreground">Estatísticas de produção e materiais requisitados.</p>
+        </div>
+        <Link to="/ordens" className="text-sm font-medium text-primary hover:underline">Ver ordens</Link>
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <Stat icon={<ClipboardList className="h-5 w-5" />} label="Total de ordens" value={total} />
+        <Stat icon={<ClipboardList className="h-5 w-5" />} label="Em aberto" value={emAberto} hint="Aguardando + em separação" />
+        <Stat icon={<ClipboardList className="h-5 w-5" />} label="Concluídas" value={concluidas} />
+        <Stat icon={<ClipboardList className="h-5 w-5" />} label="Canceladas" value={canceladas} />
+      </div>
+
+      <div className="mt-6 grid gap-4 lg:grid-cols-2">
+        <Card className="animate-fade-in">
+          <CardHeader><CardTitle>Ordens por status</CardTitle></CardHeader>
+          <CardContent className="h-72">
+            {porStatus.length === 0 ? <p className="text-sm text-muted-foreground">Nenhuma ordem cadastrada.</p> : (
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie data={porStatus} dataKey="value" nameKey="name" innerRadius={50} outerRadius={90} label>
+                    {porStatus.map((s, i) => <Cell key={i} fill={s.fill} />)}
+                  </Pie>
+                  <Legend />
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            )}
+          </CardContent>
+        </Card>
+        <Card className="animate-fade-in">
+          <CardHeader><CardTitle>Ordens criadas por mês</CardTitle></CardHeader>
+          <CardContent className="h-72">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={meses}>
+                <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
+                <XAxis dataKey="nome" tick={{ fontSize: 12 }} />
+                <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
+                <Tooltip />
+                <Bar dataKey="ordens" fill="hsl(217 91% 60%)" radius={[6, 6, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="mt-6">
+        <Card className="animate-fade-in">
+          <CardHeader><CardTitle>Materiais requisitados por tipo</CardTitle></CardHeader>
+          <CardContent className="h-72">
+            {porTipo.length === 0 ? <p className="text-sm text-muted-foreground">Nenhum material vinculado a ordens.</p> : (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={porTipo}>
+                  <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
+                  <XAxis dataKey="nome" tick={{ fontSize: 12 }} />
+                  <YAxis tick={{ fontSize: 12 }} />
+                  <Tooltip />
+                  <Bar dataKey="quantidade" fill="hsl(142 71% 45%)" radius={[6, 6, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    </section>
+  );
+}
+

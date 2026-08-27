@@ -1,0 +1,1 @@
+ALTER TABLE public.ordens_producao ADD COLUMN IF NOT EXISTS imagem_url text;

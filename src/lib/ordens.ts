@@ -72,6 +72,7 @@ export type Ordem = {
   quantidade: number;
   status: StatusOrdem;
   observacoes: string | null;
+  imagem_url: string | null;
   criado_por: string | null;
   criado_por_email: string | null;
   criado_em: string;
@@ -90,12 +91,13 @@ export function useOrdens(q: string, status: string) {
         query = query.or(`numero.ilike.${like},referencia.ilike.${like},descricao.ilike.${like}`);
       }
       if (status) query = query.eq("status", status);
-      const { data, error } = await query.order("criado_em", { ascending: false });
+      const { data, error } = await query.order("numero", { ascending: true });
       if (error) throw error;
       return (data ?? []) as Ordem[];
     },
   });
 }
+
 
 export function useOrdem(id: string) {
   return useQuery({
@@ -129,6 +131,7 @@ export function useCriarOrdem() {
       descricao: string;
       quantidade: number;
       observacoes?: string;
+      imagem_url?: string | null;
       materiais: NovoMaterial[];
     }) => {
       const { data: sessao } = await typedSupabase.auth.getUser();
@@ -141,12 +144,14 @@ export function useCriarOrdem() {
           descricao: input.descricao,
           quantidade: input.quantidade,
           observacoes: input.observacoes || null,
+          imagem_url: input.imagem_url ?? null,
           criado_por: user?.id ?? null,
           criado_por_email: user?.email ?? null,
         })
         .select("id")
         .single();
       if (error) throw error;
+
       const ordemId = (data as { id: string }).id;
       if (input.materiais.length > 0) {
         const { error: e2 } = await sb
@@ -160,7 +165,41 @@ export function useCriarOrdem() {
   });
 }
 
+export function useAtualizarOrdem() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, patch }: { id: string; patch: Record<string, unknown> }) => {
+      const { error } = await sb.from("ordens_producao").update(patch).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: (_d, v) => {
+      qc.invalidateQueries({ queryKey: ["ordens"] });
+      qc.invalidateQueries({ queryKey: ["ordem", v.id] });
+      qc.invalidateQueries({ queryKey: ["ordens-stats"] });
+    },
+  });
+}
+
+export function useOrdensStats() {
+  return useQuery({
+    queryKey: ["ordens-stats"],
+    queryFn: async () => {
+      const [o, m] = await Promise.all([
+        sb.from("ordens_producao").select("status, criado_em, quantidade"),
+        sb.from("ordem_itens").select("tipo_material, quantidade"),
+      ]);
+      if (o.error) throw o.error;
+      if (m.error) throw m.error;
+      return {
+        ordens: (o.data ?? []) as { status: StatusOrdem; criado_em: string; quantidade: number }[],
+        materiais: (m.data ?? []) as { tipo_material: string; quantidade: number }[],
+      };
+    },
+  });
+}
+
 export function useAtualizarStatus() {
+
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, status }: { id: string; status: StatusOrdem }) => {
