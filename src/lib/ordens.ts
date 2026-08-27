@@ -165,7 +165,41 @@ export function useCriarOrdem() {
   });
 }
 
+export function useAtualizarOrdem() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, patch }: { id: string; patch: Record<string, unknown> }) => {
+      const { error } = await sb.from("ordens_producao").update(patch).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: (_d, v) => {
+      qc.invalidateQueries({ queryKey: ["ordens"] });
+      qc.invalidateQueries({ queryKey: ["ordem", v.id] });
+      qc.invalidateQueries({ queryKey: ["ordens-stats"] });
+    },
+  });
+}
+
+export function useOrdensStats() {
+  return useQuery({
+    queryKey: ["ordens-stats"],
+    queryFn: async () => {
+      const [o, m] = await Promise.all([
+        sb.from("ordens_producao").select("status, criado_em, quantidade"),
+        sb.from("ordem_itens").select("tipo_material, quantidade"),
+      ]);
+      if (o.error) throw o.error;
+      if (m.error) throw m.error;
+      return {
+        ordens: (o.data ?? []) as { status: StatusOrdem; criado_em: string; quantidade: number }[],
+        materiais: (m.data ?? []) as { tipo_material: string; quantidade: number }[],
+      };
+    },
+  });
+}
+
 export function useAtualizarStatus() {
+
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, status }: { id: string; status: StatusOrdem }) => {
