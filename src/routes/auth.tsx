@@ -141,7 +141,7 @@ function AuthPage() {
                 </div>
                 <div className="space-y-1.5">
                   <Label htmlFor="p2">Senha (mín. 6)</Label>
-                  <Input id="p2" type="password" minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} required />
+                  <CampoSenha id="p2" minLength={6} value={password} onChange={setPassword} />
                 </div>
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? "Criando…" : "Criar conta"}
