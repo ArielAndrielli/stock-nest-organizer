@@ -131,6 +131,7 @@ export function useCriarOrdem() {
       descricao: string;
       quantidade: number;
       observacoes?: string;
+      imagem_url?: string | null;
       materiais: NovoMaterial[];
     }) => {
       const { data: sessao } = await typedSupabase.auth.getUser();
@@ -143,12 +144,14 @@ export function useCriarOrdem() {
           descricao: input.descricao,
           quantidade: input.quantidade,
           observacoes: input.observacoes || null,
+          imagem_url: input.imagem_url ?? null,
           criado_por: user?.id ?? null,
           criado_por_email: user?.email ?? null,
         })
         .select("id")
         .single();
       if (error) throw error;
+
       const ordemId = (data as { id: string }).id;
       if (input.materiais.length > 0) {
         const { error: e2 } = await sb
