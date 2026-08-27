@@ -23,6 +23,8 @@ import {
 import { Plus, Search, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { useItens } from "@/lib/itens";
+import { ImageField } from "@/components/ImageField";
+
 import {
   TIPOS_MATERIAL,
   TIPO_MATERIAL_ROTULO,
