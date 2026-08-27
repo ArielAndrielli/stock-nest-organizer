@@ -122,7 +122,7 @@ function AuthPage() {
                 </div>
                 <div className="space-y-1.5">
                   <Label htmlFor="p">Senha</Label>
-                  <Input id="p" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+                  <CampoSenha id="p" value={password} onChange={setPassword} />
                 </div>
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? "Entrando…" : "Entrar"}
