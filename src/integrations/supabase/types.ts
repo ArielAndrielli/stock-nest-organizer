@@ -307,6 +307,7 @@ export type Database = {
           criado_por_email: string | null
           descricao: string
           id: string
+          imagem_url: string | null
           numero: string
           observacoes: string | null
           quantidade: number
@@ -320,6 +321,7 @@ export type Database = {
           criado_por_email?: string | null
           descricao: string
           id?: string
+          imagem_url?: string | null
           numero: string
           observacoes?: string | null
           quantidade?: number
@@ -333,6 +335,7 @@ export type Database = {
           criado_por_email?: string | null
           descricao?: string
           id?: string
+          imagem_url?: string | null
           numero?: string
           observacoes?: string | null
           quantidade?: number
