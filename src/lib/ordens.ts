@@ -72,6 +72,7 @@ export type Ordem = {
   quantidade: number;
   status: StatusOrdem;
   observacoes: string | null;
+  imagem_url: string | null;
   criado_por: string | null;
   criado_por_email: string | null;
   criado_em: string;
@@ -90,12 +91,13 @@ export function useOrdens(q: string, status: string) {
         query = query.or(`numero.ilike.${like},referencia.ilike.${like},descricao.ilike.${like}`);
       }
       if (status) query = query.eq("status", status);
-      const { data, error } = await query.order("criado_em", { ascending: false });
+      const { data, error } = await query.order("numero", { ascending: true });
       if (error) throw error;
       return (data ?? []) as Ordem[];
     },
   });
 }
+
 
 export function useOrdem(id: string) {
   return useQuery({
