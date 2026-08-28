@@ -292,6 +292,7 @@ function OrdensPage() {
                         </Select>
                       </div>
                     )}
+                    </div>
                   </div>
                 ))}
               </div>
