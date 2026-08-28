@@ -67,6 +67,9 @@ export function NovaOrdem({
     setQuantidade("1");
     setObservacoes("");
     setMateriais([]);
+    setImagem(null);
+    setTermoRef("");
+    setRefFocado(false);
     setSelecionado(null);
     setBuscaItem("");
     setTermo("");
@@ -78,6 +81,11 @@ export function NovaOrdem({
     return () => clearTimeout(t);
   }, [buscaItem]);
 
+  useEffect(() => {
+    const t = setTimeout(() => setTermoRef(referencia), 250);
+    return () => clearTimeout(t);
+  }, [referencia]);
+
   const { data: busca, isFetching } = useItens({
     q: termo,
     filtros: {},
@@ -87,7 +95,22 @@ export function NovaOrdem({
     porPagina: 8,
   });
 
+  const { data: buscaRef } = useItens({
+    q: termoRef,
+    filtros: {},
+    ordenarPor: "codigo_interno",
+    ordem: "asc",
+    pagina: 1,
+    porPagina: 8,
+  });
+
+  const sugestoesRef = useMemo(
+    () => (termoRef.trim() ? (buscaRef?.rows ?? []) : []),
+    [buscaRef, termoRef],
+  );
+
   const resultados = useMemo(() => (termo.trim() ? (busca?.rows ?? []) : []), [busca, termo]);
+
 
   const adicionarMaterial = () => {
     if (!selecionado) return toast.error("Selecione um item da base.");
