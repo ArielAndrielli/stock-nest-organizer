@@ -145,6 +145,7 @@ export function NovaOrdem({
         descricao: descricao.trim(),
         quantidade: qtd,
         observacoes,
+        imagem_url: imagem,
         materiais,
       });
       toast.success("Ordem de produção criada.");
