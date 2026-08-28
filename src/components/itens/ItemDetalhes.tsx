@@ -190,6 +190,7 @@ export function ItemDetalhes({
             </Button>
           )}
         </DialogFooter>
+        <ImageViewer src={zoom} alt={item.referencia ?? "Item"} onClose={() => setZoom(null)} />
       </DialogContent>
     </Dialog>
   );
