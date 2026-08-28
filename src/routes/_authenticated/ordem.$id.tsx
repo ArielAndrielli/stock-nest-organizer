@@ -239,6 +239,31 @@ function OrdemDetalhePage() {
           <Info titulo="Atualizado em" valor={formatarData(ordem.atualizado_em)} />
         </div>
 
+        <section className="space-y-3 rounded-xl border bg-card p-4">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h2 className="text-sm font-semibold">Imagem</h2>
+            {canEdit && !editandoImagem && (
+              <Button size="sm" variant="outline" onClick={() => setEditandoImagem(true)}>
+                {imagem ? "Alterar imagem" : "Adicionar imagem"}
+              </Button>
+            )}
+            {canEdit && editandoImagem && (
+              <Button size="sm" variant="ghost" onClick={() => { setImagem(ordem.imagem_url ?? null); setEditandoImagem(false); }}>
+                Cancelar
+              </Button>
+            )}
+          </div>
+          {editandoImagem ? (
+            <ImageField value={imagem} onChange={salvarImagem} label="Imagem da ordem" />
+          ) : imagem ? (
+            <button type="button" onClick={() => setZoom(imagem)} className="block w-full max-w-md overflow-hidden rounded-lg border">
+              <img src={imagem} alt={`Ordem ${ordem.numero}`} className="aspect-video w-full object-cover" />
+            </button>
+          ) : (
+            <p className="text-sm text-muted-foreground">Nenhuma imagem anexada.</p>
+          )}
+        </section>
+
         {ordem.observacoes && (
           <div className="rounded-xl border bg-card p-4">
             <div className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Observações</div>
