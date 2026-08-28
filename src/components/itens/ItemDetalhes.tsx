@@ -83,7 +83,14 @@ export function ItemDetalhes({
             <div className="flex gap-4">
               <div className="h-28 w-28 shrink-0 overflow-hidden rounded-lg border bg-muted">
                 {item.imagem_url ? (
-                  <img src={item.imagem_url} alt={item.referencia ?? "Item"} className="h-full w-full object-cover" />
+                  <button
+                    type="button"
+                    onClick={() => setZoom(item.imagem_url!)}
+                    className="h-full w-full cursor-zoom-in"
+                    aria-label="Ampliar imagem"
+                  >
+                    <img src={item.imagem_url} alt={item.referencia ?? "Item"} className="h-full w-full object-cover" />
+                  </button>
                 ) : (
                   <div className="flex h-full w-full items-center justify-center text-muted-foreground">
                     <ImageIcon className="h-6 w-6" />
