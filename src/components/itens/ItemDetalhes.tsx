@@ -29,6 +29,7 @@ export function ItemDetalhes({
 }) {
   const { canEdit } = usePermissions();
   const [editando, setEditando] = useState(false);
+  const [zoom, setZoom] = useState<string | null>(null);
   const [form, setForm] = useState<Record<string, string>>({});
   const salvar = useSaveItem();
 
