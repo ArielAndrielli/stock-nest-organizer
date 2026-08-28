@@ -49,12 +49,16 @@ export function NovaOrdem({
   const [quantidade, setQuantidade] = useState("1");
   const [observacoes, setObservacoes] = useState("");
   const [materiais, setMateriais] = useState<NovoMaterial[]>([]);
+  const [imagem, setImagem] = useState<string | null>(null);
+  const [termoRef, setTermoRef] = useState("");
+  const [refFocado, setRefFocado] = useState(false);
 
   const [tipo, setTipo] = useState<string>("cartao");
   const [buscaItem, setBuscaItem] = useState("");
   const [termo, setTermo] = useState("");
   const [qtdMaterial, setQtdMaterial] = useState("1");
   const [selecionado, setSelecionado] = useState<{ id: string; ref: string; desc: string } | null>(null);
+
 
   useEffect(() => {
     if (!open) return;
@@ -63,6 +67,9 @@ export function NovaOrdem({
     setQuantidade("1");
     setObservacoes("");
     setMateriais([]);
+    setImagem(null);
+    setTermoRef("");
+    setRefFocado(false);
     setSelecionado(null);
     setBuscaItem("");
     setTermo("");
@@ -74,6 +81,11 @@ export function NovaOrdem({
     return () => clearTimeout(t);
   }, [buscaItem]);
 
+  useEffect(() => {
+    const t = setTimeout(() => setTermoRef(referencia), 250);
+    return () => clearTimeout(t);
+  }, [referencia]);
+
   const { data: busca, isFetching } = useItens({
     q: termo,
     filtros: {},
@@ -83,7 +95,22 @@ export function NovaOrdem({
     porPagina: 8,
   });
 
+  const { data: buscaRef } = useItens({
+    q: termoRef,
+    filtros: {},
+    ordenarPor: "codigo_interno",
+    ordem: "asc",
+    pagina: 1,
+    porPagina: 8,
+  });
+
+  const sugestoesRef = useMemo(
+    () => (termoRef.trim() ? (buscaRef?.rows ?? []) : []),
+    [buscaRef, termoRef],
+  );
+
   const resultados = useMemo(() => (termo.trim() ? (busca?.rows ?? []) : []), [busca, termo]);
+
 
   const adicionarMaterial = () => {
     if (!selecionado) return toast.error("Selecione um item da base.");
@@ -118,6 +145,7 @@ export function NovaOrdem({
         descricao: descricao.trim(),
         quantidade: qtd,
         observacoes,
+        imagem_url: imagem,
         materiais,
       });
       toast.success("Ordem de produção criada.");
@@ -145,9 +173,38 @@ export function NovaOrdem({
                 <Label htmlFor="numero">Nº da ordem</Label>
                 <Input id="numero" value={numero} onChange={(e) => setNumero(e.target.value)} />
               </div>
-              <div className="space-y-1.5">
+              <div className="relative space-y-1.5">
                 <Label htmlFor="ref">Referência</Label>
-                <Input id="ref" value={referencia} onChange={(e) => setReferencia(e.target.value)} />
+                <Input
+                  id="ref"
+                  autoComplete="off"
+                  value={referencia}
+                  onFocus={() => setRefFocado(true)}
+                  onBlur={() => setTimeout(() => setRefFocado(false), 150)}
+                  onChange={(e) => setReferencia(e.target.value)}
+                />
+                {refFocado && sugestoesRef.length > 0 && (
+                  <ul className="absolute z-50 mt-1 max-h-52 w-full overflow-auto rounded-lg border bg-popover shadow-md">
+                    {sugestoesRef.map((i) => (
+                      <li key={i.id}>
+                        <button
+                          type="button"
+                          className="w-full px-3 py-2 text-left text-sm transition-colors hover:bg-accent"
+                          onMouseDown={(e) => e.preventDefault()}
+                          onClick={() => {
+                            setReferencia(i.referencia ?? String(i.codigo_interno));
+                            if (i.descricao) setDescricao(i.descricao);
+                            setTermoRef("");
+                            setRefFocado(false);
+                          }}
+                        >
+                          <span className="font-medium">{i.referencia || `#${i.codigo_interno}`}</span>{" "}
+                          <span className="text-muted-foreground">{i.descricao}</span>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
               <div className="space-y-1.5 sm:col-span-2">
                 <Label htmlFor="desc">Descrição do produto</Label>
@@ -167,6 +224,10 @@ export function NovaOrdem({
                 <Label htmlFor="obs">Observações (opcional)</Label>
                 <Textarea id="obs" rows={2} value={observacoes} onChange={(e) => setObservacoes(e.target.value)} />
               </div>
+              <div className="sm:col-span-2">
+                <ImageField value={imagem} onChange={setImagem} label="Imagem da ordem" />
+              </div>
+
             </div>
 
             <section className="space-y-3">

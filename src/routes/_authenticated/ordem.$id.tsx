@@ -27,6 +27,8 @@ import {
 import { cn } from "@/lib/utils";
 import { usePermissions } from "@/hooks/use-auth";
 import { useItens } from "@/lib/itens";
+import { ImageField } from "@/components/ImageField";
+import { ImageViewer } from "@/components/ImageViewer";
 import {
   STATUS_CLASSE,
   STATUS_ORDEM,
@@ -34,6 +36,7 @@ import {
   TIPOS_MATERIAL,
   TIPO_MATERIAL_ROTULO,
   useAtualizarMateriais,
+  useAtualizarOrdem,
   useAtualizarStatus,
   useExcluirOrdem,
   useOrdem,
@@ -74,10 +77,14 @@ function OrdemDetalhePage() {
   const mudarStatus = useAtualizarStatus();
   const salvarMateriais = useAtualizarMateriais();
   const excluir = useExcluirOrdem();
+  const atualizarOrdem = useAtualizarOrdem();
 
   const [materiais, setMateriais] = useState<NovoMaterial[]>([]);
   const [sujo, setSujo] = useState(false);
   const [confirmar, setConfirmar] = useState(false);
+  const [zoom, setZoom] = useState<string | null>(null);
+  const [editandoImagem, setEditandoImagem] = useState(false);
+  const [imagem, setImagem] = useState<string | null>(null);
 
   const [tipo, setTipo] = useState<string>("cartao");
   const [buscaItem, setBuscaItem] = useState("");
@@ -97,7 +104,20 @@ function OrdemDetalhePage() {
       })),
     );
     setSujo(false);
+    setImagem(ordem.imagem_url ?? null);
+    setEditandoImagem(false);
   }, [ordem]);
+
+  const salvarImagem = async (valor: string | null) => {
+    setImagem(valor);
+    try {
+      await atualizarOrdem.mutateAsync({ id, patch: { imagem_url: valor } });
+      toast.success("Imagem atualizada.");
+      setEditandoImagem(false);
+    } catch (e) {
+      toast.error((e as Error).message);
+    }
+  };
 
   useEffect(() => {
     const t = setTimeout(() => setTermo(buscaItem), 250);
@@ -218,6 +238,31 @@ function OrdemDetalhePage() {
           <Info titulo="Criado em" valor={formatarData(ordem.criado_em)} icone={<CalendarDays className="h-4 w-4" />} />
           <Info titulo="Atualizado em" valor={formatarData(ordem.atualizado_em)} />
         </div>
+
+        <section className="space-y-3 rounded-xl border bg-card p-4">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h2 className="text-sm font-semibold">Imagem</h2>
+            {canEdit && !editandoImagem && (
+              <Button size="sm" variant="outline" onClick={() => setEditandoImagem(true)}>
+                {imagem ? "Alterar imagem" : "Adicionar imagem"}
+              </Button>
+            )}
+            {canEdit && editandoImagem && (
+              <Button size="sm" variant="ghost" onClick={() => { setImagem(ordem.imagem_url ?? null); setEditandoImagem(false); }}>
+                Cancelar
+              </Button>
+            )}
+          </div>
+          {editandoImagem ? (
+            <ImageField value={imagem} onChange={salvarImagem} label="Imagem da ordem" />
+          ) : imagem ? (
+            <button type="button" onClick={() => setZoom(imagem)} className="block w-full max-w-md overflow-hidden rounded-lg border">
+              <img src={imagem} alt={`Ordem ${ordem.numero}`} className="aspect-video w-full object-cover" />
+            </button>
+          ) : (
+            <p className="text-sm text-muted-foreground">Nenhuma imagem anexada.</p>
+          )}
+        </section>
 
         {ordem.observacoes && (
           <div className="rounded-xl border bg-card p-4">
@@ -377,6 +422,8 @@ function OrdemDetalhePage() {
           )}
         </section>
       </div>
+
+      <ImageViewer src={zoom} alt={`Ordem ${ordem.numero}`} onClose={() => setZoom(null)} />
 
       <AlertDialog open={confirmar} onOpenChange={setConfirmar}>
         <AlertDialogContent>

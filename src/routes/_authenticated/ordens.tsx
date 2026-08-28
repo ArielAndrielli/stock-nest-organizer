@@ -186,7 +186,18 @@ function OrdensPage() {
                     className="cursor-pointer transition-colors hover:bg-muted/50"
                     onClick={() => navigate({ to: "/ordem/$id", params: { id: o.id } })}
                   >
-                    <td className="p-3 font-medium">{o.numero}</td>
+                    <td className="p-3 font-medium">
+                      <div className="flex items-center gap-2">
+                        {o.imagem_url && (
+                          <img
+                            src={o.imagem_url}
+                            alt=""
+                            className="h-8 w-8 shrink-0 rounded object-cover"
+                          />
+                        )}
+                        {o.numero}
+                      </div>
+                    </td>
                     <td className="p-3">{o.referencia}</td>
                     <td className="max-w-xs truncate p-3">{o.descricao}</td>
                     <td className="p-3 tabular-nums">{o.quantidade}</td>
@@ -258,8 +269,16 @@ function OrdensPage() {
                     onDragStart={() => setArrastando(o.id)}
                     onDragEnd={() => setArrastando(null)}
                     onClick={() => navigate({ to: "/ordem/$id", params: { id: o.id } })}
-                    className="cursor-pointer rounded-lg border bg-card p-3 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
+                    className="cursor-pointer overflow-hidden rounded-lg border bg-card text-left shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
                   >
+                    {o.imagem_url && (
+                      <img
+                        src={o.imagem_url}
+                        alt={`Ordem ${o.numero}`}
+                        className="aspect-video w-full object-cover"
+                      />
+                    )}
+                    <div className="p-3">
                     <div className="text-xs text-muted-foreground">{o.numero}</div>
                     <div className="truncate text-sm font-medium">{o.referencia}</div>
                     <p className="line-clamp-2 text-xs text-muted-foreground">{o.descricao}</p>
@@ -267,6 +286,7 @@ function OrdensPage() {
                       <span>Qtd. {o.quantidade}</span>
                       <span>{o.ordem_itens?.length ?? 0} materiais</span>
                     </div>
+
                     {canEdit && (
                       <div className="mt-2 md:hidden" onClick={(e) => e.stopPropagation()}>
                         <Select value={o.status} onValueChange={(v) => aplicarStatus(o.id, v as StatusOrdem)}>
@@ -283,6 +303,7 @@ function OrdensPage() {
                         </Select>
                       </div>
                     )}
+                    </div>
                   </div>
                 ))}
               </div>
