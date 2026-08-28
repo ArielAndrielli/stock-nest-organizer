@@ -49,12 +49,16 @@ export function NovaOrdem({
   const [quantidade, setQuantidade] = useState("1");
   const [observacoes, setObservacoes] = useState("");
   const [materiais, setMateriais] = useState<NovoMaterial[]>([]);
+  const [imagem, setImagem] = useState<string | null>(null);
+  const [termoRef, setTermoRef] = useState("");
+  const [refFocado, setRefFocado] = useState(false);
 
   const [tipo, setTipo] = useState<string>("cartao");
   const [buscaItem, setBuscaItem] = useState("");
   const [termo, setTermo] = useState("");
   const [qtdMaterial, setQtdMaterial] = useState("1");
   const [selecionado, setSelecionado] = useState<{ id: string; ref: string; desc: string } | null>(null);
+
 
   useEffect(() => {
     if (!open) return;
