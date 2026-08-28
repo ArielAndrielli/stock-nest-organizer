@@ -186,7 +186,18 @@ function OrdensPage() {
                     className="cursor-pointer transition-colors hover:bg-muted/50"
                     onClick={() => navigate({ to: "/ordem/$id", params: { id: o.id } })}
                   >
-                    <td className="p-3 font-medium">{o.numero}</td>
+                    <td className="p-3 font-medium">
+                      <div className="flex items-center gap-2">
+                        {o.imagem_url && (
+                          <img
+                            src={o.imagem_url}
+                            alt=""
+                            className="h-8 w-8 shrink-0 rounded object-cover"
+                          />
+                        )}
+                        {o.numero}
+                      </div>
+                    </td>
                     <td className="p-3">{o.referencia}</td>
                     <td className="max-w-xs truncate p-3">{o.descricao}</td>
                     <td className="p-3 tabular-nums">{o.quantidade}</td>
