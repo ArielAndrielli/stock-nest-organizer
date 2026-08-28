@@ -27,6 +27,8 @@ import {
 import { cn } from "@/lib/utils";
 import { usePermissions } from "@/hooks/use-auth";
 import { useItens } from "@/lib/itens";
+import { ImageField } from "@/components/ImageField";
+import { ImageViewer } from "@/components/ImageViewer";
 import {
   STATUS_CLASSE,
   STATUS_ORDEM,
@@ -34,6 +36,7 @@ import {
   TIPOS_MATERIAL,
   TIPO_MATERIAL_ROTULO,
   useAtualizarMateriais,
+  useAtualizarOrdem,
   useAtualizarStatus,
   useExcluirOrdem,
   useOrdem,
