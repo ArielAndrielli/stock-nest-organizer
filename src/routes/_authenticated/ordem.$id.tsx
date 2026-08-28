@@ -77,10 +77,14 @@ function OrdemDetalhePage() {
   const mudarStatus = useAtualizarStatus();
   const salvarMateriais = useAtualizarMateriais();
   const excluir = useExcluirOrdem();
+  const atualizarOrdem = useAtualizarOrdem();
 
   const [materiais, setMateriais] = useState<NovoMaterial[]>([]);
   const [sujo, setSujo] = useState(false);
   const [confirmar, setConfirmar] = useState(false);
+  const [zoom, setZoom] = useState<string | null>(null);
+  const [editandoImagem, setEditandoImagem] = useState(false);
+  const [imagem, setImagem] = useState<string | null>(null);
 
   const [tipo, setTipo] = useState<string>("cartao");
   const [buscaItem, setBuscaItem] = useState("");
