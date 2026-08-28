@@ -16,6 +16,7 @@ import { toast } from "sonner";
 import { formatarValor, useSaveItem, type Item, type ItemCampo } from "@/lib/itens";
 import { usePermissions } from "@/hooks/use-auth";
 import { ImageIcon, Pencil } from "lucide-react";
+import { ImageViewer } from "@/components/ImageViewer";
 
 export function ItemDetalhes({
   item,
