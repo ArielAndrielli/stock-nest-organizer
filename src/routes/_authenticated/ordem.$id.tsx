@@ -104,7 +104,20 @@ function OrdemDetalhePage() {
       })),
     );
     setSujo(false);
+    setImagem(ordem.imagem_url ?? null);
+    setEditandoImagem(false);
   }, [ordem]);
+
+  const salvarImagem = async (valor: string | null) => {
+    setImagem(valor);
+    try {
+      await atualizarOrdem.mutateAsync({ id, patch: { imagem_url: valor } });
+      toast.success("Imagem atualizada.");
+      setEditandoImagem(false);
+    } catch (e) {
+      toast.error((e as Error).message);
+    }
+  };
 
   useEffect(() => {
     const t = setTimeout(() => setTermo(buscaItem), 250);
