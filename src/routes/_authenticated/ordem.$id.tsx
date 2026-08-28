@@ -423,6 +423,8 @@ function OrdemDetalhePage() {
         </section>
       </div>
 
+      <ImageViewer src={zoom} alt={`Ordem ${ordem.numero}`} onClose={() => setZoom(null)} />
+
       <AlertDialog open={confirmar} onOpenChange={setConfirmar}>
         <AlertDialogContent>
           <AlertDialogHeader>
