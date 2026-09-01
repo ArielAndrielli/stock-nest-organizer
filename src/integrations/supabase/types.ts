@@ -52,6 +52,62 @@ export type Database = {
           },
         ]
       }
+      compromissos: {
+        Row: {
+          atualizado_em: string
+          categoria: string
+          criado_em: string
+          criado_por: string | null
+          criado_por_email: string | null
+          descricao: string | null
+          dia_inteiro: boolean
+          fim: string | null
+          id: string
+          inicio: string
+          local: string | null
+          ordem_id: string | null
+          titulo: string
+        }
+        Insert: {
+          atualizado_em?: string
+          categoria?: string
+          criado_em?: string
+          criado_por?: string | null
+          criado_por_email?: string | null
+          descricao?: string | null
+          dia_inteiro?: boolean
+          fim?: string | null
+          id?: string
+          inicio: string
+          local?: string | null
+          ordem_id?: string | null
+          titulo: string
+        }
+        Update: {
+          atualizado_em?: string
+          categoria?: string
+          criado_em?: string
+          criado_por?: string | null
+          criado_por_email?: string | null
+          descricao?: string | null
+          dia_inteiro?: boolean
+          fim?: string | null
+          id?: string
+          inicio?: string
+          local?: string | null
+          ordem_id?: string | null
+          titulo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "compromissos_ordem_id_fkey"
+            columns: ["ordem_id"]
+            isOneToOne: false
+            referencedRelation: "ordens_producao"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       historico_eventos: {
         Row: {
           acao: string
