@@ -42,7 +42,7 @@ export function CompromissoDialog({
   const [ordemId, setOrdemId] = useState<string>("nenhuma");
   const [buscaOrdem, setBuscaOrdem] = useState("");
 
-  const { data: ordens } = useOrdens(buscaOrdem, "todos");
+  const { data: ordens } = useOrdens(buscaOrdem, "");
 
   useEffect(() => {
     if (!open) return;
