@@ -17,6 +17,7 @@ import { Route as AuthenticatedOrdensRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedItensRouteImport } from './routes/_authenticated/itens'
 import { Route as AuthenticatedHistoricoRouteImport } from './routes/_authenticated/historico'
 import { Route as AuthenticatedEtiquetasRouteImport } from './routes/_authenticated/etiquetas'
+import { Route as AuthenticatedCalendarioRouteImport } from './routes/_authenticated/calendario'
 import { Route as AuthenticatedBuscarRouteImport } from './routes/_authenticated/buscar'
 import { Route as AuthenticatedVagaIdRouteImport } from './routes/_authenticated/vaga.$id'
 import { Route as AuthenticatedSetorIdRouteImport } from './routes/_authenticated/setor.$id'
@@ -63,6 +64,11 @@ const AuthenticatedEtiquetasRoute = AuthenticatedEtiquetasRouteImport.update({
   path: '/etiquetas',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedCalendarioRoute = AuthenticatedCalendarioRouteImport.update({
+  id: '/calendario',
+  path: '/calendario',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedBuscarRoute = AuthenticatedBuscarRouteImport.update({
   id: '/buscar',
   path: '/buscar',
@@ -99,6 +105,7 @@ export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
   '/auth': typeof AuthRoute
   '/buscar': typeof AuthenticatedBuscarRoute
+  '/calendario': typeof AuthenticatedCalendarioRoute
   '/etiquetas': typeof AuthenticatedEtiquetasRoute
   '/historico': typeof AuthenticatedHistoricoRoute
   '/itens': typeof AuthenticatedItensRoute
@@ -113,6 +120,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/buscar': typeof AuthenticatedBuscarRoute
+  '/calendario': typeof AuthenticatedCalendarioRoute
   '/etiquetas': typeof AuthenticatedEtiquetasRoute
   '/historico': typeof AuthenticatedHistoricoRoute
   '/itens': typeof AuthenticatedItensRoute
@@ -130,6 +138,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/_authenticated/buscar': typeof AuthenticatedBuscarRoute
+  '/_authenticated/calendario': typeof AuthenticatedCalendarioRoute
   '/_authenticated/etiquetas': typeof AuthenticatedEtiquetasRoute
   '/_authenticated/historico': typeof AuthenticatedHistoricoRoute
   '/_authenticated/itens': typeof AuthenticatedItensRoute
@@ -148,6 +157,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/buscar'
+    | '/calendario'
     | '/etiquetas'
     | '/historico'
     | '/itens'
@@ -162,6 +172,7 @@ export interface FileRouteTypes {
   to:
     | '/auth'
     | '/buscar'
+    | '/calendario'
     | '/etiquetas'
     | '/historico'
     | '/itens'
@@ -178,6 +189,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/auth'
     | '/_authenticated/buscar'
+    | '/_authenticated/calendario'
     | '/_authenticated/etiquetas'
     | '/_authenticated/historico'
     | '/_authenticated/itens'
@@ -254,6 +266,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedEtiquetasRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/calendario': {
+      id: '/_authenticated/calendario'
+      path: '/calendario'
+      fullPath: '/calendario'
+      preLoaderRoute: typeof AuthenticatedCalendarioRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/buscar': {
       id: '/_authenticated/buscar'
       path: '/buscar'
@@ -301,6 +320,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedBuscarRoute: typeof AuthenticatedBuscarRoute
+  AuthenticatedCalendarioRoute: typeof AuthenticatedCalendarioRoute
   AuthenticatedEtiquetasRoute: typeof AuthenticatedEtiquetasRoute
   AuthenticatedHistoricoRoute: typeof AuthenticatedHistoricoRoute
   AuthenticatedItensRoute: typeof AuthenticatedItensRoute
@@ -316,6 +336,7 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedBuscarRoute: AuthenticatedBuscarRoute,
+  AuthenticatedCalendarioRoute: AuthenticatedCalendarioRoute,
   AuthenticatedEtiquetasRoute: AuthenticatedEtiquetasRoute,
   AuthenticatedHistoricoRoute: AuthenticatedHistoricoRoute,
   AuthenticatedItensRoute: AuthenticatedItensRoute,
