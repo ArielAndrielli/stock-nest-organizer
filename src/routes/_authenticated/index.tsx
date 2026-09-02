@@ -4,6 +4,7 @@ import {
   Bar, BarChart, CartesianGrid, Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis,
 } from "recharts";
 import { AppShell } from "@/components/AppShell";
+import { AgendaMes } from "@/components/calendario/AgendaMes";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDashboardData } from "@/lib/queries";
@@ -152,6 +153,8 @@ function Dashboard() {
           </Card>
         </div>
       )}
+
+      <AgendaMes />
 
       <OrdensStats />
     </AppShell>
