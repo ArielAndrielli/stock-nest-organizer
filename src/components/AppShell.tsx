@@ -1,6 +1,6 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { Boxes, ClipboardList, Factory, LayoutDashboard, LogOut, Package, PackageSearch, Printer, Search, Users } from "lucide-react";
+import { Boxes, CalendarDays, ClipboardList, Factory, LayoutDashboard, LogOut, Package, PackageSearch, Printer, Search, Users } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -157,8 +157,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             <NavLink to="/itens" icon={<Package className="h-4 w-4" />} label="Itens" />
             <NavLink to="/ordens" icon={<Factory className="h-4 w-4" />} label="Ordens" />
             <NavLink to="/historico" icon={<ClipboardList className="h-4 w-4" />} label="Histórico" />
-
-
+            <NavLink to="/calendario" icon={<CalendarDays className="h-4 w-4" />} label="Calendário" />
             <NavLink to="/etiquetas" icon={<Printer className="h-4 w-4" />} label="Etiquetas" />
           </nav>
           <div className="flex-1" />
