@@ -10,6 +10,9 @@ import { useGlobalSearch } from "@/lib/queries";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, useMyRole } from "@/hooks/use-auth";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/AppSidebar";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 function NavLink({ to, icon, label }: { to: string; icon: ReactNode; label: string }) {
   const path = useRouterState({ select: (s) => s.location.pathname });
