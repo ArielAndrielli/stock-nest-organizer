@@ -139,33 +139,23 @@ function UserMenu() {
 
 export function AppShell({ children }: { children: ReactNode }) {
   return (
-    <div className="min-h-screen bg-background">
-      <header className="no-print sticky top-0 z-30 border-b bg-card/95 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:gap-4 sm:px-6">
-          <Link to="/" className="flex items-center gap-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-              <Boxes className="h-5 w-5" />
+    <SidebarProvider>
+      <div className="flex min-h-screen w-full bg-background">
+        <AppSidebar />
+        <div className="flex min-w-0 flex-1 flex-col">
+          <header className="no-print sticky top-0 z-30 border-b bg-card/95 backdrop-blur">
+            <div className="flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:gap-4 sm:px-6">
+              <SidebarTrigger />
+              <div className="flex-1" />
+              <GlobalSearch />
+              <ThemeToggle />
+              <UserMenu />
             </div>
-            <div className="leading-tight">
-              <div className="text-sm font-semibold">Estoque</div>
-              <div className="text-[11px] text-muted-foreground">Setor · Vaga · Caixa</div>
-            </div>
-          </Link>
-          <nav className="flex flex-wrap items-center gap-1">
-            <NavLink to="/" icon={<LayoutDashboard className="h-4 w-4" />} label="Dashboard" />
-            <NavLink to="/setores" icon={<PackageSearch className="h-4 w-4" />} label="Setores" />
-            <NavLink to="/itens" icon={<Package className="h-4 w-4" />} label="Itens" />
-            <NavLink to="/ordens" icon={<Factory className="h-4 w-4" />} label="Ordens" />
-            <NavLink to="/historico" icon={<ClipboardList className="h-4 w-4" />} label="Histórico" />
-            <NavLink to="/calendario" icon={<CalendarDays className="h-4 w-4" />} label="Calendário" />
-            <NavLink to="/etiquetas" icon={<Printer className="h-4 w-4" />} label="Etiquetas" />
-          </nav>
-          <div className="flex-1" />
-          <GlobalSearch />
-          <UserMenu />
+          </header>
+          <main className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 sm:py-8 animate-fade-in">{children}</main>
         </div>
-      </header>
-      <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8 animate-fade-in">{children}</main>
-    </div>
+      </div>
+    </SidebarProvider>
   );
 }
+
