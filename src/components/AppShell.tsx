@@ -1,32 +1,17 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { Boxes, CalendarDays, ClipboardList, Factory, LayoutDashboard, LogOut, Package, PackageSearch, Printer, Search, Users } from "lucide-react";
+import { LogOut, Search, Users } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useGlobalSearch } from "@/lib/queries";
-import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, useMyRole } from "@/hooks/use-auth";
-
-function NavLink({ to, icon, label }: { to: string; icon: ReactNode; label: string }) {
-  const path = useRouterState({ select: (s) => s.location.pathname });
-  const active = path === to || (to !== "/" && path.startsWith(to));
-  return (
-    <Link
-      to={to}
-      className={cn(
-        "inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
-        active ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-muted hover:text-foreground",
-      )}
-    >
-      {icon}
-      <span className="hidden md:inline">{label}</span>
-    </Link>
-  );
-}
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/AppSidebar";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 function GlobalSearch() {
   const navigate = useNavigate();
@@ -139,33 +124,23 @@ function UserMenu() {
 
 export function AppShell({ children }: { children: ReactNode }) {
   return (
-    <div className="min-h-screen bg-background">
-      <header className="no-print sticky top-0 z-30 border-b bg-card/95 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:gap-4 sm:px-6">
-          <Link to="/" className="flex items-center gap-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-              <Boxes className="h-5 w-5" />
+    <SidebarProvider>
+      <div className="flex min-h-screen w-full bg-background">
+        <AppSidebar />
+        <div className="flex min-w-0 flex-1 flex-col">
+          <header className="no-print sticky top-0 z-30 border-b bg-card/95 backdrop-blur">
+            <div className="flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:gap-4 sm:px-6">
+              <SidebarTrigger />
+              <div className="flex-1" />
+              <GlobalSearch />
+              <ThemeToggle />
+              <UserMenu />
             </div>
-            <div className="leading-tight">
-              <div className="text-sm font-semibold">Estoque</div>
-              <div className="text-[11px] text-muted-foreground">Setor · Vaga · Caixa</div>
-            </div>
-          </Link>
-          <nav className="flex flex-wrap items-center gap-1">
-            <NavLink to="/" icon={<LayoutDashboard className="h-4 w-4" />} label="Dashboard" />
-            <NavLink to="/setores" icon={<PackageSearch className="h-4 w-4" />} label="Setores" />
-            <NavLink to="/itens" icon={<Package className="h-4 w-4" />} label="Itens" />
-            <NavLink to="/ordens" icon={<Factory className="h-4 w-4" />} label="Ordens" />
-            <NavLink to="/historico" icon={<ClipboardList className="h-4 w-4" />} label="Histórico" />
-            <NavLink to="/calendario" icon={<CalendarDays className="h-4 w-4" />} label="Calendário" />
-            <NavLink to="/etiquetas" icon={<Printer className="h-4 w-4" />} label="Etiquetas" />
-          </nav>
-          <div className="flex-1" />
-          <GlobalSearch />
-          <UserMenu />
+          </header>
+          <main className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 sm:py-8 animate-fade-in">{children}</main>
         </div>
-      </header>
-      <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8 animate-fade-in">{children}</main>
-    </div>
+      </div>
+    </SidebarProvider>
   );
 }
+
