@@ -1,35 +1,17 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { Boxes, CalendarDays, ClipboardList, Factory, LayoutDashboard, LogOut, Package, PackageSearch, Printer, Search, Users } from "lucide-react";
+import { LogOut, Search, Users } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useGlobalSearch } from "@/lib/queries";
-import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, useMyRole } from "@/hooks/use-auth";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { ThemeToggle } from "@/components/ThemeToggle";
-
-function NavLink({ to, icon, label }: { to: string; icon: ReactNode; label: string }) {
-  const path = useRouterState({ select: (s) => s.location.pathname });
-  const active = path === to || (to !== "/" && path.startsWith(to));
-  return (
-    <Link
-      to={to}
-      className={cn(
-        "inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
-        active ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-muted hover:text-foreground",
-      )}
-    >
-      {icon}
-      <span className="hidden md:inline">{label}</span>
-    </Link>
-  );
-}
 
 function GlobalSearch() {
   const navigate = useNavigate();
