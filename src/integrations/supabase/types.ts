@@ -108,6 +108,87 @@ export type Database = {
           },
         ]
       }
+      fornecedor_campos: {
+        Row: {
+          atualizado_em: string
+          chave: string
+          criado_em: string
+          filtravel: boolean
+          fixo: boolean
+          id: string
+          ordem: number
+          rotulo: string
+          tipo: string
+          visivel_padrao: boolean
+        }
+        Insert: {
+          atualizado_em?: string
+          chave: string
+          criado_em?: string
+          filtravel?: boolean
+          fixo?: boolean
+          id?: string
+          ordem?: number
+          rotulo: string
+          tipo?: string
+          visivel_padrao?: boolean
+        }
+        Update: {
+          atualizado_em?: string
+          chave?: string
+          criado_em?: string
+          filtravel?: boolean
+          fixo?: boolean
+          id?: string
+          ordem?: number
+          rotulo?: string
+          tipo?: string
+          visivel_padrao?: boolean
+        }
+        Relationships: []
+      }
+      fornecedores: {
+        Row: {
+          atualizado_em: string
+          cidade: string | null
+          cnpj: string | null
+          criado_em: string
+          email: string | null
+          extras: Json
+          id: string
+          nome: string
+          observacoes: string | null
+          telefone: string | null
+          uf: string | null
+        }
+        Insert: {
+          atualizado_em?: string
+          cidade?: string | null
+          cnpj?: string | null
+          criado_em?: string
+          email?: string | null
+          extras?: Json
+          id?: string
+          nome: string
+          observacoes?: string | null
+          telefone?: string | null
+          uf?: string | null
+        }
+        Update: {
+          atualizado_em?: string
+          cidade?: string | null
+          cnpj?: string | null
+          criado_em?: string
+          email?: string | null
+          extras?: Json
+          id?: string
+          nome?: string
+          observacoes?: string | null
+          telefone?: string | null
+          uf?: string | null
+        }
+        Relationships: []
+      }
       historico_eventos: {
         Row: {
           acao: string
