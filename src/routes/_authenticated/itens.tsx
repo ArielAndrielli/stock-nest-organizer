@@ -500,6 +500,8 @@ function ItensPage() {
         campos={campos}
         onConcluir={() => refetch()}
       />
+      <ItemForm open={openNovo} onOpenChange={setOpenNovo} campos={campos} onConcluir={() => refetch()} />
+
 
       <AlertDialog open={!!excluir} onOpenChange={(v) => !v && setExcluir(null)}>
         <AlertDialogContent>
