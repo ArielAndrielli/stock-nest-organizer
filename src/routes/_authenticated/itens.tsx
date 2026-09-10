@@ -11,6 +11,7 @@ import {
   LayoutGrid,
   MoreVertical,
   Package,
+  Plus,
   RefreshCw,
   RotateCcw,
   Rows3,
@@ -49,6 +50,7 @@ import { ColunasSheet } from "@/components/itens/ColunasSheet";
 import { FiltrosSheet } from "@/components/itens/FiltrosSheet";
 import { ItemDetalhes } from "@/components/itens/ItemDetalhes";
 import { ImportarExcel } from "@/components/itens/ImportarExcel";
+import { ItemForm } from "@/components/itens/ItemForm";
 import { ExportarDialog } from "@/components/itens/ExportarDialog";
 import {
   Select,
@@ -104,6 +106,7 @@ function ItensPage() {
   const [openColunas, setOpenColunas] = useState(false);
   const [openFiltros, setOpenFiltros] = useState(false);
   const [openImport, setOpenImport] = useState(false);
+  const [openNovo, setOpenNovo] = useState(false);
   const [openExport, setOpenExport] = useState(false);
   const [detalhe, setDetalhe] = useState<Item | null>(null);
   const [excluir, setExcluir] = useState<Item | null>(null);
@@ -263,9 +266,14 @@ function ItensPage() {
               <Download className="h-4 w-4" /> Exportar
             </Button>
             {canEdit && (
-              <Button size="sm" className="gap-2" onClick={() => setOpenImport(true)}>
-                <Upload className="h-4 w-4" /> Importar Excel
-              </Button>
+              <>
+                <Button variant="outline" size="sm" className="gap-2" onClick={() => setOpenImport(true)}>
+                  <Upload className="h-4 w-4" /> Importar Excel
+                </Button>
+                <Button size="sm" className="gap-2" onClick={() => setOpenNovo(true)}>
+                  <Plus className="h-4 w-4" /> Novo item
+                </Button>
+              </>
             )}
           </div>
         </div>

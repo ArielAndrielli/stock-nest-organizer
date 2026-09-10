@@ -16,6 +16,7 @@ import { Route as AuthenticatedSetoresRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedOrdensRouteImport } from './routes/_authenticated/ordens'
 import { Route as AuthenticatedItensRouteImport } from './routes/_authenticated/itens'
 import { Route as AuthenticatedHistoricoRouteImport } from './routes/_authenticated/historico'
+import { Route as AuthenticatedFornecedoresRouteImport } from './routes/_authenticated/fornecedores'
 import { Route as AuthenticatedEtiquetasRouteImport } from './routes/_authenticated/etiquetas'
 import { Route as AuthenticatedCalendarioRouteImport } from './routes/_authenticated/calendario'
 import { Route as AuthenticatedBuscarRouteImport } from './routes/_authenticated/buscar'
@@ -59,6 +60,12 @@ const AuthenticatedHistoricoRoute = AuthenticatedHistoricoRouteImport.update({
   path: '/historico',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedFornecedoresRoute =
+  AuthenticatedFornecedoresRouteImport.update({
+    id: '/fornecedores',
+    path: '/fornecedores',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedEtiquetasRoute = AuthenticatedEtiquetasRouteImport.update({
   id: '/etiquetas',
   path: '/etiquetas',
@@ -107,6 +114,7 @@ export interface FileRoutesByFullPath {
   '/buscar': typeof AuthenticatedBuscarRoute
   '/calendario': typeof AuthenticatedCalendarioRoute
   '/etiquetas': typeof AuthenticatedEtiquetasRoute
+  '/fornecedores': typeof AuthenticatedFornecedoresRoute
   '/historico': typeof AuthenticatedHistoricoRoute
   '/itens': typeof AuthenticatedItensRoute
   '/ordens': typeof AuthenticatedOrdensRoute
@@ -122,6 +130,7 @@ export interface FileRoutesByTo {
   '/buscar': typeof AuthenticatedBuscarRoute
   '/calendario': typeof AuthenticatedCalendarioRoute
   '/etiquetas': typeof AuthenticatedEtiquetasRoute
+  '/fornecedores': typeof AuthenticatedFornecedoresRoute
   '/historico': typeof AuthenticatedHistoricoRoute
   '/itens': typeof AuthenticatedItensRoute
   '/ordens': typeof AuthenticatedOrdensRoute
@@ -140,6 +149,7 @@ export interface FileRoutesById {
   '/_authenticated/buscar': typeof AuthenticatedBuscarRoute
   '/_authenticated/calendario': typeof AuthenticatedCalendarioRoute
   '/_authenticated/etiquetas': typeof AuthenticatedEtiquetasRoute
+  '/_authenticated/fornecedores': typeof AuthenticatedFornecedoresRoute
   '/_authenticated/historico': typeof AuthenticatedHistoricoRoute
   '/_authenticated/itens': typeof AuthenticatedItensRoute
   '/_authenticated/ordens': typeof AuthenticatedOrdensRoute
@@ -159,6 +169,7 @@ export interface FileRouteTypes {
     | '/buscar'
     | '/calendario'
     | '/etiquetas'
+    | '/fornecedores'
     | '/historico'
     | '/itens'
     | '/ordens'
@@ -174,6 +185,7 @@ export interface FileRouteTypes {
     | '/buscar'
     | '/calendario'
     | '/etiquetas'
+    | '/fornecedores'
     | '/historico'
     | '/itens'
     | '/ordens'
@@ -191,6 +203,7 @@ export interface FileRouteTypes {
     | '/_authenticated/buscar'
     | '/_authenticated/calendario'
     | '/_authenticated/etiquetas'
+    | '/_authenticated/fornecedores'
     | '/_authenticated/historico'
     | '/_authenticated/itens'
     | '/_authenticated/ordens'
@@ -259,6 +272,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedHistoricoRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/fornecedores': {
+      id: '/_authenticated/fornecedores'
+      path: '/fornecedores'
+      fullPath: '/fornecedores'
+      preLoaderRoute: typeof AuthenticatedFornecedoresRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/etiquetas': {
       id: '/_authenticated/etiquetas'
       path: '/etiquetas'
@@ -322,6 +342,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedBuscarRoute: typeof AuthenticatedBuscarRoute
   AuthenticatedCalendarioRoute: typeof AuthenticatedCalendarioRoute
   AuthenticatedEtiquetasRoute: typeof AuthenticatedEtiquetasRoute
+  AuthenticatedFornecedoresRoute: typeof AuthenticatedFornecedoresRoute
   AuthenticatedHistoricoRoute: typeof AuthenticatedHistoricoRoute
   AuthenticatedItensRoute: typeof AuthenticatedItensRoute
   AuthenticatedOrdensRoute: typeof AuthenticatedOrdensRoute
@@ -338,6 +359,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedBuscarRoute: AuthenticatedBuscarRoute,
   AuthenticatedCalendarioRoute: AuthenticatedCalendarioRoute,
   AuthenticatedEtiquetasRoute: AuthenticatedEtiquetasRoute,
+  AuthenticatedFornecedoresRoute: AuthenticatedFornecedoresRoute,
   AuthenticatedHistoricoRoute: AuthenticatedHistoricoRoute,
   AuthenticatedItensRoute: AuthenticatedItensRoute,
   AuthenticatedOrdensRoute: AuthenticatedOrdensRoute,
