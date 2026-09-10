@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Boxes, CalendarDays, ClipboardList, Factory, LayoutDashboard, Package, PackageSearch, Printer } from "lucide-react";
+import { Boxes, CalendarDays, ClipboardList, Factory, LayoutDashboard, Package, PackageSearch, Printer, Truck } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -16,6 +16,7 @@ const items = [
   { title: "Dashboard", url: "/", icon: LayoutDashboard },
   { title: "Setores", url: "/setores", icon: PackageSearch },
   { title: "Itens", url: "/itens", icon: Package },
+  { title: "Fornecedores", url: "/fornecedores", icon: Truck },
   { title: "Ordens", url: "/ordens", icon: Factory },
   { title: "Histórico", url: "/historico", icon: ClipboardList },
   { title: "Calendário", url: "/calendario", icon: CalendarDays },
