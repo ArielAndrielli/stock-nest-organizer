@@ -291,6 +291,40 @@ export function useSaveItem() {
   });
 }
 
+export async function proximoCodigoInterno(): Promise<number> {
+  const { data, error } = await sb
+    .from("itens")
+    .select("codigo_interno")
+    .order("codigo_interno", { ascending: false })
+    .limit(1);
+  if (error) throw error;
+  const atual = (data ?? [])[0]?.codigo_interno;
+  return atual ? Number(atual) + 1 : 1;
+}
+
+export async function codigoInternoExiste(codigo: number): Promise<boolean> {
+  const { count, error } = await sb
+    .from("itens")
+    .select("id", { count: "exact", head: true })
+    .eq("codigo_interno", codigo);
+  if (error) throw error;
+  return (count ?? 0) > 0;
+}
+
+export function useCriarItem() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: Partial<Item>) => {
+      const { error } = await sb.from("itens").insert(input);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["itens"] });
+      qc.invalidateQueries({ queryKey: ["itens-total"] });
+    },
+  });
+}
+
 // ---------- IMPORTACAO ----------
 export type LinhaImport = Record<string, unknown>;
 
