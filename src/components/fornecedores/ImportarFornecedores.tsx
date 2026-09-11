@@ -163,11 +163,12 @@ export function ImportarFornecedores({
         }
       }
 
-      const nome = String(fixos.nome ?? "").trim();
+      const nome = String(fixos.razao_social ?? fixos.nome ?? "").trim();
       const cnpj = somenteDigitos(String(fixos.cnpj ?? ""));
+      const codigoBruto = somenteDigitos(String(fixos.codigo ?? ""));
 
       if (!nome) {
-        erros.push({ linha: linhaExcel, identificacao: "—", campo: "Nome", motivo: "Ausente" });
+        erros.push({ linha: linhaExcel, identificacao: "—", campo: "Razão Social", motivo: "Ausente" });
         return;
       }
       if (cnpj && cnpj.length !== 14) {
