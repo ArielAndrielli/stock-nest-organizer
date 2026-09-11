@@ -151,16 +151,19 @@ export function useFornecedores(args: FornecedoresQueryArgs) {
       const termo = args.q.trim();
       if (termo) {
         const like = `%${termo.replace(/[%,]/g, " ")}%`;
-        query = query.or(
-          [
-            `nome.ilike.${like}`,
-            `cnpj.ilike.${like}`,
-            `email.ilike.${like}`,
-            `telefone.ilike.${like}`,
-            `cidade.ilike.${like}`,
-            `uf.ilike.${like}`,
-          ].join(","),
-        );
+        const filtros = [
+          `nome.ilike.${like}`,
+          `razao_social.ilike.${like}`,
+          `nome_fantasia.ilike.${like}`,
+          `cnpj.ilike.${like}`,
+          `inscricao_estadual.ilike.${like}`,
+          `telefone.ilike.${like}`,
+          `email.ilike.${like}`,
+          `cidade.ilike.${like}`,
+          `uf.ilike.${like}`,
+        ];
+        if (/^\d+$/.test(termo)) filtros.push(`codigo.eq.${termo}`);
+        query = query.or(filtros.join(","));
       }
       const col = isFixoFornecedor(args.ordenarPor) ? args.ordenarPor : `extras->>${args.ordenarPor}`;
       query = query.order(col, { ascending: args.ordem === "asc", nullsFirst: false });
