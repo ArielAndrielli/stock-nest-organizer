@@ -211,7 +211,7 @@ export function ImportarFornecedores({
   }, [etapa, linhas, colunas, mapa, cnpjsExistentes, nomesExistentes]);
 
   const irParaPrevia = async () => {
-    const colNome = Object.entries(mapa).find(([, d]) => d.tipo === "fixo" && d.chave === "nome")?.[0];
+    const colNome = Object.entries(mapa).find(([, d]) => d.tipo === "fixo" && d.chave === "razao_social")?.[0];
     const colCnpj = Object.entries(mapa).find(([, d]) => d.tipo === "fixo" && d.chave === "cnpj")?.[0];
     const cnpjs = colCnpj
       ? Array.from(
