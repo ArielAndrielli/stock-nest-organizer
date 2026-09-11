@@ -10,11 +10,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import {
+  proximoCodigoFornecedor,
   somenteDigitos,
+  UFS,
   useCriarFornecedor,
   useSalvarFornecedor,
   type Fornecedor,
@@ -22,12 +24,11 @@ import {
 } from "@/lib/fornecedores";
 
 const CAMPOS: Array<[string, string]> = [
-  ["nome", "Nome"],
+  ["razao_social", "Razão Social"],
+  ["nome_fantasia", "Nome Fantasia"],
   ["cnpj", "CNPJ"],
+  ["inscricao_estadual", "Inscrição Estadual"],
   ["telefone", "Telefone"],
-  ["email", "E-mail"],
-  ["cidade", "Cidade"],
-  ["uf", "UF"],
 ];
 
 export function FornecedorDialog({
@@ -50,13 +51,13 @@ export function FornecedorDialog({
   useEffect(() => {
     if (!open) return;
     setForm({
-      nome: fornecedor?.nome ?? "",
+      codigo: fornecedor?.codigo != null ? String(fornecedor.codigo) : "",
+      razao_social: fornecedor?.razao_social ?? fornecedor?.nome ?? "",
+      nome_fantasia: fornecedor?.nome_fantasia ?? "",
       cnpj: fornecedor?.cnpj ?? "",
-      telefone: fornecedor?.telefone ?? "",
-      email: fornecedor?.email ?? "",
-      cidade: fornecedor?.cidade ?? "",
+      inscricao_estadual: fornecedor?.inscricao_estadual ?? "",
       uf: fornecedor?.uf ?? "",
-      observacoes: fornecedor?.observacoes ?? "",
+      telefone: fornecedor?.telefone ?? "",
     });
     const e: Record<string, string> = {};
     for (const c of campos.filter((x) => !x.fixo)) {
@@ -64,11 +65,16 @@ export function FornecedorDialog({
       e[c.chave] = v === null || v === undefined ? "" : String(v);
     }
     setExtras(e);
+    if (!fornecedor) {
+      proximoCodigoFornecedor()
+        .then((n) => setForm((f) => ({ ...f, codigo: String(n) })))
+        .catch(() => undefined);
+    }
   }, [open, fornecedor, campos]);
 
   const enviar = async () => {
-    if (!form.nome?.trim()) {
-      toast.error("Informe o nome do fornecedor.");
+    if (!form.razao_social?.trim()) {
+      toast.error("Informe a Razão Social.");
       return;
     }
     const cnpj = somenteDigitos(form.cnpj ?? "");
@@ -79,14 +85,16 @@ export function FornecedorDialog({
     const extrasLimpos: Record<string, unknown> = {};
     for (const [k, v] of Object.entries(extras)) if (v.trim() !== "") extrasLimpos[k] = v;
 
+    const codigoNum = Number(form.codigo);
     const payload = {
-      nome: form.nome.trim(),
+      codigo: Number.isFinite(codigoNum) && codigoNum > 0 ? codigoNum : null,
+      razao_social: form.razao_social.trim(),
+      nome: form.razao_social.trim(),
+      nome_fantasia: form.nome_fantasia?.trim() || null,
       cnpj: cnpj || null,
-      telefone: form.telefone?.trim() || null,
-      email: form.email?.trim() || null,
-      cidade: form.cidade?.trim() || null,
+      inscricao_estadual: form.inscricao_estadual?.trim() || null,
       uf: form.uf?.trim().toUpperCase() || null,
-      observacoes: form.observacoes?.trim() || null,
+      telefone: form.telefone?.trim() || null,
       extras: extrasLimpos,
     };
 
@@ -101,7 +109,13 @@ export function FornecedorDialog({
       onOpenChange(false);
     } catch (e) {
       const msg = (e as Error).message;
-      toast.error(/duplicate|unique/i.test(msg) ? "Já existe um fornecedor com este CNPJ." : msg);
+      toast.error(
+        /codigo/i.test(msg) && /duplicate|unique/i.test(msg)
+          ? "Já existe um fornecedor com este código."
+          : /duplicate|unique/i.test(msg)
+            ? "Já existe um fornecedor com este CNPJ."
+            : msg,
+      );
     }
   };
 
@@ -116,6 +130,15 @@ export function FornecedorDialog({
         </DialogHeader>
         <ScrollArea className="max-h-[60vh] pr-4">
           <div className="grid gap-3 sm:grid-cols-2">
+            <div className="space-y-1.5">
+              <Label htmlFor="f-codigo">Código</Label>
+              <Input
+                id="f-codigo"
+                inputMode="numeric"
+                value={form.codigo ?? ""}
+                onChange={(ev) => setForm((f) => ({ ...f, codigo: ev.target.value.replace(/\D+/g, "") }))}
+              />
+            </div>
             {CAMPOS.map(([k, rotulo]) => (
               <div key={k} className="space-y-1.5">
                 <Label htmlFor={`f-${k}`}>{rotulo}</Label>
@@ -126,14 +149,23 @@ export function FornecedorDialog({
                 />
               </div>
             ))}
-            <div className="space-y-1.5 sm:col-span-2">
-              <Label htmlFor="f-observacoes">Observações</Label>
-              <Textarea
-                id="f-observacoes"
-                rows={3}
-                value={form.observacoes ?? ""}
-                onChange={(ev) => setForm((f) => ({ ...f, observacoes: ev.target.value }))}
-              />
+            <div className="space-y-1.5">
+              <Label htmlFor="f-uf">Estado</Label>
+              <Select
+                value={form.uf || undefined}
+                onValueChange={(v) => setForm((f) => ({ ...f, uf: v }))}
+              >
+                <SelectTrigger id="f-uf">
+                  <SelectValue placeholder="Selecione" />
+                </SelectTrigger>
+                <SelectContent>
+                  {UFS.map((uf) => (
+                    <SelectItem key={uf} value={uf}>
+                      {uf}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             {adicionais.map((c) => (
               <div key={c.chave} className="space-y-1.5">
