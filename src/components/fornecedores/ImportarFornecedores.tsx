@@ -46,11 +46,19 @@ function sugerir(coluna: string, campos: FornecedorCampo[]): Destino {
   const exato = campos.find((c) => c.chave === n || normalizar(c.rotulo) === n);
   if (exato) return { tipo: exato.fixo ? "fixo" : "extra", chave: exato.chave };
   const aliases: Record<string, string> = {
-    razao_social: "nome",
-    fornecedor: "nome",
-    nome_fantasia: "nome",
+    codigo: "codigo",
+    cod: "codigo",
+    razao: "razao_social",
+    razao_social: "razao_social",
+    fornecedor: "razao_social",
+    nome: "razao_social",
+    fantasia: "nome_fantasia",
+    nome_fantasia: "nome_fantasia",
     cnpj_cpf: "cnpj",
     documento: "cnpj",
+    ie: "inscricao_estadual",
+    inscricao: "inscricao_estadual",
+    inscricao_estadual: "inscricao_estadual",
     fone: "telefone",
     celular: "telefone",
     contato: "telefone",
