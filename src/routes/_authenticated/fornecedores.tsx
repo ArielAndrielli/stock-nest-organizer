@@ -145,7 +145,7 @@ function FornecedoresPage() {
               onChange={(e) => setQ(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && aplicarBusca(q)}
               onBlur={() => aplicarBusca(q)}
-              placeholder="Pesquisar por nome, CNPJ, e-mail, telefone ou cidade…"
+              placeholder="Pesquisar por código, razão social, nome fantasia, CNPJ, IE ou telefone…"
               className="pl-9"
             />
           </div>
