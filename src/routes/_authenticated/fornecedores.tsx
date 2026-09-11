@@ -82,7 +82,7 @@ function FornecedoresPage() {
   const del = useExcluirFornecedor();
   const { data, isLoading, refetch } = useFornecedores({
     q: busca,
-    ordenarPor: "nome",
+    ordenarPor: "codigo",
     ordem: "asc",
     pagina,
     porPagina: POR_PAGINA,
