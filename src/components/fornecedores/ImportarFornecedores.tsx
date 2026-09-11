@@ -139,7 +139,7 @@ export function ImportarFornecedores({
     }
   };
 
-  const temNome = Object.values(mapa).some((d) => d.tipo === "fixo" && d.chave === "nome");
+  const temNome = Object.values(mapa).some((d) => d.tipo === "fixo" && d.chave === "razao_social");
 
   const validacao = useMemo(() => {
     if (etapa !== "previa" && etapa !== "processando" && etapa !== "resultado") return null;
