@@ -152,12 +152,16 @@ export type Database = {
           atualizado_em: string
           cidade: string | null
           cnpj: string | null
+          codigo: number | null
           criado_em: string
           email: string | null
           extras: Json
           id: string
+          inscricao_estadual: string | null
           nome: string
+          nome_fantasia: string | null
           observacoes: string | null
+          razao_social: string | null
           telefone: string | null
           uf: string | null
         }
@@ -165,12 +169,16 @@ export type Database = {
           atualizado_em?: string
           cidade?: string | null
           cnpj?: string | null
+          codigo?: number | null
           criado_em?: string
           email?: string | null
           extras?: Json
           id?: string
+          inscricao_estadual?: string | null
           nome: string
+          nome_fantasia?: string | null
           observacoes?: string | null
+          razao_social?: string | null
           telefone?: string | null
           uf?: string | null
         }
@@ -178,12 +186,16 @@ export type Database = {
           atualizado_em?: string
           cidade?: string | null
           cnpj?: string | null
+          codigo?: number | null
           criado_em?: string
           email?: string | null
           extras?: Json
           id?: string
+          inscricao_estadual?: string | null
           nome?: string
+          nome_fantasia?: string | null
           observacoes?: string | null
+          razao_social?: string | null
           telefone?: string | null
           uf?: string | null
         }
