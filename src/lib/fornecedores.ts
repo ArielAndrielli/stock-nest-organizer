@@ -12,19 +12,35 @@ const sb = typedSupabase as unknown as {
 };
 
 export const CAMPOS_FIXOS_FORNECEDOR = [
-  "nome",
+  "codigo",
+  "razao_social",
+  "nome_fantasia",
   "cnpj",
+  "inscricao_estadual",
+  "uf",
   "telefone",
+  "nome",
   "email",
   "cidade",
-  "uf",
   "observacoes",
 ] as const;
 
-export const COLUNAS_PADRAO_FORNECEDOR = ["nome", "cnpj", "telefone", "email", "cidade", "uf"];
+export const COLUNAS_PADRAO_FORNECEDOR = [
+  "codigo",
+  "razao_social",
+  "nome_fantasia",
+  "cnpj",
+  "inscricao_estadual",
+  "uf",
+  "telefone",
+];
 
 export type Fornecedor = {
   id: string;
+  codigo: number | null;
+  razao_social: string | null;
+  nome_fantasia: string | null;
+  inscricao_estadual: string | null;
   nome: string;
   cnpj: string | null;
   telefone: string | null;
@@ -36,6 +52,21 @@ export type Fornecedor = {
   criado_em: string;
   atualizado_em: string;
 };
+
+export const UFS = [
+  "AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG","PA","PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO",
+];
+
+export async function proximoCodigoFornecedor(): Promise<number> {
+  const { data, error } = await sb
+    .from("fornecedores")
+    .select("codigo")
+    .order("codigo", { ascending: false, nullsFirst: false })
+    .limit(1);
+  if (error) throw error;
+  const atual = (data ?? [])[0]?.codigo as number | null | undefined;
+  return (atual ?? 0) + 1;
+}
 
 export type FornecedorCampo = {
   id: string;
@@ -120,16 +151,19 @@ export function useFornecedores(args: FornecedoresQueryArgs) {
       const termo = args.q.trim();
       if (termo) {
         const like = `%${termo.replace(/[%,]/g, " ")}%`;
-        query = query.or(
-          [
-            `nome.ilike.${like}`,
-            `cnpj.ilike.${like}`,
-            `email.ilike.${like}`,
-            `telefone.ilike.${like}`,
-            `cidade.ilike.${like}`,
-            `uf.ilike.${like}`,
-          ].join(","),
-        );
+        const filtros = [
+          `nome.ilike.${like}`,
+          `razao_social.ilike.${like}`,
+          `nome_fantasia.ilike.${like}`,
+          `cnpj.ilike.${like}`,
+          `inscricao_estadual.ilike.${like}`,
+          `telefone.ilike.${like}`,
+          `email.ilike.${like}`,
+          `cidade.ilike.${like}`,
+          `uf.ilike.${like}`,
+        ];
+        if (/^\d+$/.test(termo)) filtros.push(`codigo.eq.${termo}`);
+        query = query.or(filtros.join(","));
       }
       const col = isFixoFornecedor(args.ordenarPor) ? args.ordenarPor : `extras->>${args.ordenarPor}`;
       query = query.order(col, { ascending: args.ordem === "asc", nullsFirst: false });

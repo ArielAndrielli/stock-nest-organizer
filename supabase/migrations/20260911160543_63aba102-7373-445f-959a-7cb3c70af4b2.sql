@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.fornecedor_sincronizar_nome() FROM PUBLIC, anon, authenticated;

@@ -46,11 +46,19 @@ function sugerir(coluna: string, campos: FornecedorCampo[]): Destino {
   const exato = campos.find((c) => c.chave === n || normalizar(c.rotulo) === n);
   if (exato) return { tipo: exato.fixo ? "fixo" : "extra", chave: exato.chave };
   const aliases: Record<string, string> = {
-    razao_social: "nome",
-    fornecedor: "nome",
-    nome_fantasia: "nome",
+    codigo: "codigo",
+    cod: "codigo",
+    razao: "razao_social",
+    razao_social: "razao_social",
+    fornecedor: "razao_social",
+    nome: "razao_social",
+    fantasia: "nome_fantasia",
+    nome_fantasia: "nome_fantasia",
     cnpj_cpf: "cnpj",
     documento: "cnpj",
+    ie: "inscricao_estadual",
+    inscricao: "inscricao_estadual",
+    inscricao_estadual: "inscricao_estadual",
     fone: "telefone",
     celular: "telefone",
     contato: "telefone",
@@ -131,7 +139,7 @@ export function ImportarFornecedores({
     }
   };
 
-  const temNome = Object.values(mapa).some((d) => d.tipo === "fixo" && d.chave === "nome");
+  const temNome = Object.values(mapa).some((d) => d.tipo === "fixo" && d.chave === "razao_social");
 
   const validacao = useMemo(() => {
     if (etapa !== "previa" && etapa !== "processando" && etapa !== "resultado") return null;
@@ -155,11 +163,12 @@ export function ImportarFornecedores({
         }
       }
 
-      const nome = String(fixos.nome ?? "").trim();
+      const nome = String(fixos.razao_social ?? fixos.nome ?? "").trim();
       const cnpj = somenteDigitos(String(fixos.cnpj ?? ""));
+      const codigoBruto = somenteDigitos(String(fixos.codigo ?? ""));
 
       if (!nome) {
-        erros.push({ linha: linhaExcel, identificacao: "—", campo: "Nome", motivo: "Ausente" });
+        erros.push({ linha: linhaExcel, identificacao: "—", campo: "Razão Social", motivo: "Ausente" });
         return;
       }
       if (cnpj && cnpj.length !== 14) {
@@ -181,6 +190,9 @@ export function ImportarFornecedores({
       const existente = cnpj ? cnpjsExistentes.has(cnpj) : nomesExistentes.has(nome);
       const row: Record<string, unknown> = {
         nome,
+        razao_social: nome,
+        nome_fantasia: fixos.nome_fantasia ?? null,
+        inscricao_estadual: fixos.inscricao_estadual ?? null,
         cnpj: cnpj || null,
         telefone: fixos.telefone ?? null,
         email: fixos.email ?? null,
@@ -189,6 +201,7 @@ export function ImportarFornecedores({
         observacoes: fixos.observacoes ?? null,
         extras,
       };
+      if (codigoBruto) row.codigo = Number(codigoBruto);
       if (!cnpj && existente) row.id = nomesExistentes.get(nome);
       validos.push({ identificacao: cnpj ? cnpj : nome, existente, row });
     });
@@ -198,7 +211,7 @@ export function ImportarFornecedores({
   }, [etapa, linhas, colunas, mapa, cnpjsExistentes, nomesExistentes]);
 
   const irParaPrevia = async () => {
-    const colNome = Object.entries(mapa).find(([, d]) => d.tipo === "fixo" && d.chave === "nome")?.[0];
+    const colNome = Object.entries(mapa).find(([, d]) => d.tipo === "fixo" && d.chave === "razao_social")?.[0];
     const colCnpj = Object.entries(mapa).find(([, d]) => d.tipo === "fixo" && d.chave === "cnpj")?.[0];
     const cnpjs = colCnpj
       ? Array.from(
