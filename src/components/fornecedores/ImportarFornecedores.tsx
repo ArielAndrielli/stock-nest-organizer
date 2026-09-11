@@ -190,6 +190,9 @@ export function ImportarFornecedores({
       const existente = cnpj ? cnpjsExistentes.has(cnpj) : nomesExistentes.has(nome);
       const row: Record<string, unknown> = {
         nome,
+        razao_social: nome,
+        nome_fantasia: fixos.nome_fantasia ?? null,
+        inscricao_estadual: fixos.inscricao_estadual ?? null,
         cnpj: cnpj || null,
         telefone: fixos.telefone ?? null,
         email: fixos.email ?? null,
@@ -198,6 +201,7 @@ export function ImportarFornecedores({
         observacoes: fixos.observacoes ?? null,
         extras,
       };
+      if (codigoBruto) row.codigo = Number(codigoBruto);
       if (!cnpj && existente) row.id = nomesExistentes.get(nome);
       validos.push({ identificacao: cnpj ? cnpj : nome, existente, row });
     });
