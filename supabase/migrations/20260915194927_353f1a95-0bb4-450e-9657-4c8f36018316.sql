@@ -1,0 +1,4 @@
+REVOKE EXECUTE ON FUNCTION public.log_historico() FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.log_movimentacao() FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.handle_new_user() FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.current_email() FROM PUBLIC;
