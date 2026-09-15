@@ -37,7 +37,7 @@ import { usePermissions } from "@/hooks/use-auth";
 import { FornecedorDialog } from "@/components/fornecedores/FornecedorDialog";
 import { ImportarFornecedores } from "@/components/fornecedores/ImportarFornecedores";
 import {
-  formatarCnpj,
+  formatarDocumento,
   useExcluirFornecedor,
   useFornecedorCampos,
   useFornecedores,
@@ -200,7 +200,7 @@ function FornecedoresPage() {
                     <td className="px-3 py-2 tabular-nums">{f.codigo ?? "—"}</td>
                     <td className="px-3 py-2 font-medium">{f.razao_social || f.nome}</td>
                     <td className="px-3 py-2">{f.nome_fantasia || "—"}</td>
-                    <td className="px-3 py-2">{f.cnpj ? formatarCnpj(f.cnpj) : "—"}</td>
+                    <td className="px-3 py-2">{f.cnpj ? formatarDocumento(f.cnpj) : "—"}</td>
                     <td className="px-3 py-2">{f.inscricao_estadual || "—"}</td>
                     <td className="px-3 py-2">{f.uf || "—"}</td>
                     <td className="px-3 py-2">{f.telefone || "—"}</td>

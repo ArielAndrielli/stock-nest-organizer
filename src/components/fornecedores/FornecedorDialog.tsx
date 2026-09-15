@@ -14,6 +14,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import {
+  MAX_DIGITOS_DOCUMENTO,
   proximoCodigoFornecedor,
   somenteDigitos,
   UFS,
@@ -78,8 +79,8 @@ export function FornecedorDialog({
       return;
     }
     const cnpj = somenteDigitos(form.cnpj ?? "");
-    if (cnpj && cnpj.length !== 14) {
-      toast.error("O CNPJ deve ter 14 dígitos.");
+    if (cnpj.length > MAX_DIGITOS_DOCUMENTO) {
+      toast.error(`O documento pode ter no máximo ${MAX_DIGITOS_DOCUMENTO} dígitos.`);
       return;
     }
     const extrasLimpos: Record<string, unknown> = {};

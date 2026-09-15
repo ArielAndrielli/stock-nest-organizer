@@ -19,6 +19,7 @@ import {
   buscarCnpjsExistentes,
   buscarNomesExistentes,
   CAMPOS_FIXOS_FORNECEDOR,
+  MAX_DIGITOS_DOCUMENTO,
   somenteDigitos,
   upsertLoteFornecedores,
   useCriarCamposFornecedor,
@@ -171,8 +172,13 @@ export function ImportarFornecedores({
         erros.push({ linha: linhaExcel, identificacao: "—", campo: "Razão Social", motivo: "Ausente" });
         return;
       }
-      if (cnpj && cnpj.length !== 14) {
-        erros.push({ linha: linhaExcel, identificacao: nome, campo: "CNPJ", motivo: "Deve ter 14 dígitos" });
+      if (cnpj.length > MAX_DIGITOS_DOCUMENTO) {
+        erros.push({
+          linha: linhaExcel,
+          identificacao: nome,
+          campo: "CNPJ/CPF",
+          motivo: `Máximo de ${MAX_DIGITOS_DOCUMENTO} dígitos`,
+        });
         return;
       }
       const chave = cnpj || `nome:${nome.toLowerCase()}`;
@@ -218,7 +224,7 @@ export function ImportarFornecedores({
           new Set(
             linhas
               .map((r) => somenteDigitos(String(r[colCnpj] ?? "")))
-              .filter((c) => c.length === 14),
+              .filter((c) => c.length >= 1 && c.length <= MAX_DIGITOS_DOCUMENTO),
           ),
         )
       : [];

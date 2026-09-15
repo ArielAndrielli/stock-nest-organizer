@@ -92,11 +92,23 @@ export function somenteDigitos(v: string) {
   return v.replace(/\D+/g, "");
 }
 
-export function formatarCnpj(v: string | null) {
+export const MAX_DIGITOS_DOCUMENTO = 20;
+
+export function documentoValido(v: string | null) {
   const d = somenteDigitos(v ?? "");
-  if (d.length !== 14) return v ?? "";
-  return `${d.slice(0, 2)}.${d.slice(2, 5)}.${d.slice(5, 8)}/${d.slice(8, 12)}-${d.slice(12)}`;
+  return d.length <= MAX_DIGITOS_DOCUMENTO;
 }
+
+export function formatarDocumento(v: string | null) {
+  const d = somenteDigitos(v ?? "");
+  if (d.length === 14)
+    return `${d.slice(0, 2)}.${d.slice(2, 5)}.${d.slice(5, 8)}/${d.slice(8, 12)}-${d.slice(12)}`;
+  if (d.length === 11)
+    return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6, 9)}-${d.slice(9)}`;
+  return d || (v ?? "");
+}
+
+export const formatarCnpj = formatarDocumento;
 
 // ---------- CAMPOS ----------
 export function useFornecedorCampos() {
