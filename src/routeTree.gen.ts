@@ -13,6 +13,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
 import { Route as AuthenticatedSetoresRouteImport } from './routes/_authenticated/setores'
+import { Route as AuthenticatedPreEntradaRouteImport } from './routes/_authenticated/pre-entrada'
 import { Route as AuthenticatedOrdensRouteImport } from './routes/_authenticated/ordens'
 import { Route as AuthenticatedItensRouteImport } from './routes/_authenticated/itens'
 import { Route as AuthenticatedHistoricoRouteImport } from './routes/_authenticated/historico'
@@ -43,6 +44,11 @@ const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
 const AuthenticatedSetoresRoute = AuthenticatedSetoresRouteImport.update({
   id: '/setores',
   path: '/setores',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedPreEntradaRoute = AuthenticatedPreEntradaRouteImport.update({
+  id: '/pre-entrada',
+  path: '/pre-entrada',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedOrdensRoute = AuthenticatedOrdensRouteImport.update({
@@ -118,6 +124,7 @@ export interface FileRoutesByFullPath {
   '/historico': typeof AuthenticatedHistoricoRoute
   '/itens': typeof AuthenticatedItensRoute
   '/ordens': typeof AuthenticatedOrdensRoute
+  '/pre-entrada': typeof AuthenticatedPreEntradaRoute
   '/setores': typeof AuthenticatedSetoresRoute
   '/admin/usuarios': typeof AuthenticatedAdminUsuariosRoute
   '/caixa/$id': typeof AuthenticatedCaixaIdRoute
@@ -134,6 +141,7 @@ export interface FileRoutesByTo {
   '/historico': typeof AuthenticatedHistoricoRoute
   '/itens': typeof AuthenticatedItensRoute
   '/ordens': typeof AuthenticatedOrdensRoute
+  '/pre-entrada': typeof AuthenticatedPreEntradaRoute
   '/setores': typeof AuthenticatedSetoresRoute
   '/': typeof AuthenticatedIndexRoute
   '/admin/usuarios': typeof AuthenticatedAdminUsuariosRoute
@@ -153,6 +161,7 @@ export interface FileRoutesById {
   '/_authenticated/historico': typeof AuthenticatedHistoricoRoute
   '/_authenticated/itens': typeof AuthenticatedItensRoute
   '/_authenticated/ordens': typeof AuthenticatedOrdensRoute
+  '/_authenticated/pre-entrada': typeof AuthenticatedPreEntradaRoute
   '/_authenticated/setores': typeof AuthenticatedSetoresRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/admin/usuarios': typeof AuthenticatedAdminUsuariosRoute
@@ -173,6 +182,7 @@ export interface FileRouteTypes {
     | '/historico'
     | '/itens'
     | '/ordens'
+    | '/pre-entrada'
     | '/setores'
     | '/admin/usuarios'
     | '/caixa/$id'
@@ -189,6 +199,7 @@ export interface FileRouteTypes {
     | '/historico'
     | '/itens'
     | '/ordens'
+    | '/pre-entrada'
     | '/setores'
     | '/'
     | '/admin/usuarios'
@@ -207,6 +218,7 @@ export interface FileRouteTypes {
     | '/_authenticated/historico'
     | '/_authenticated/itens'
     | '/_authenticated/ordens'
+    | '/_authenticated/pre-entrada'
     | '/_authenticated/setores'
     | '/_authenticated/'
     | '/_authenticated/admin/usuarios'
@@ -249,6 +261,13 @@ declare module '@tanstack/react-router' {
       path: '/setores'
       fullPath: '/setores'
       preLoaderRoute: typeof AuthenticatedSetoresRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/pre-entrada': {
+      id: '/_authenticated/pre-entrada'
+      path: '/pre-entrada'
+      fullPath: '/pre-entrada'
+      preLoaderRoute: typeof AuthenticatedPreEntradaRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/ordens': {
@@ -346,6 +365,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedHistoricoRoute: typeof AuthenticatedHistoricoRoute
   AuthenticatedItensRoute: typeof AuthenticatedItensRoute
   AuthenticatedOrdensRoute: typeof AuthenticatedOrdensRoute
+  AuthenticatedPreEntradaRoute: typeof AuthenticatedPreEntradaRoute
   AuthenticatedSetoresRoute: typeof AuthenticatedSetoresRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedAdminUsuariosRoute: typeof AuthenticatedAdminUsuariosRoute
@@ -363,6 +383,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedHistoricoRoute: AuthenticatedHistoricoRoute,
   AuthenticatedItensRoute: AuthenticatedItensRoute,
   AuthenticatedOrdensRoute: AuthenticatedOrdensRoute,
+  AuthenticatedPreEntradaRoute: AuthenticatedPreEntradaRoute,
   AuthenticatedSetoresRoute: AuthenticatedSetoresRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
   AuthenticatedAdminUsuariosRoute: AuthenticatedAdminUsuariosRoute,

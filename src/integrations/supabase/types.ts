@@ -614,6 +614,7 @@ export type Database = {
         Returns: boolean
       }
       pode_editar: { Args: { _user_id: string }; Returns: boolean }
+      tem_papel: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
       app_role: "administrador" | "operador" | "visitante"
