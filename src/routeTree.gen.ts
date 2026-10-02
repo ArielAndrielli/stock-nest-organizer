@@ -9,31 +9,31 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
-import { Route as AuthenticatedBuscarRouteImport } from './routes/_authenticated/buscar'
-import { Route as AuthenticatedCalendarioRouteImport } from './routes/_authenticated/calendario'
-import { Route as AuthenticatedEtiquetasRouteImport } from './routes/_authenticated/etiquetas'
-import { Route as AuthenticatedFornecedoresRouteImport } from './routes/_authenticated/fornecedores'
-import { Route as AuthenticatedHistoricoRouteImport } from './routes/_authenticated/historico'
-import { Route as AuthenticatedItensRouteImport } from './routes/_authenticated/itens'
-import { Route as AuthenticatedOrdensRouteImport } from './routes/_authenticated/ordens'
-import { Route as AuthenticatedPreEntradaRouteImport } from './routes/_authenticated/pre-entrada'
 import { Route as AuthenticatedSetoresRouteImport } from './routes/_authenticated/setores'
-import { Route as AuthenticatedAdminUsuariosRouteImport } from './routes/_authenticated/admin.usuarios'
-import { Route as AuthenticatedCaixaIdRouteImport } from './routes/_authenticated/caixa.$id'
-import { Route as AuthenticatedOrdemIdRouteImport } from './routes/_authenticated/ordem.$id'
-import { Route as AuthenticatedSetorIdRouteImport } from './routes/_authenticated/setor.$id'
+import { Route as AuthenticatedPreEntradaRouteImport } from './routes/_authenticated/pre-entrada'
+import { Route as AuthenticatedOrdensRouteImport } from './routes/_authenticated/ordens'
+import { Route as AuthenticatedItensRouteImport } from './routes/_authenticated/itens'
+import { Route as AuthenticatedHistoricoRouteImport } from './routes/_authenticated/historico'
+import { Route as AuthenticatedFornecedoresRouteImport } from './routes/_authenticated/fornecedores'
+import { Route as AuthenticatedEtiquetasRouteImport } from './routes/_authenticated/etiquetas'
+import { Route as AuthenticatedCalendarioRouteImport } from './routes/_authenticated/calendario'
+import { Route as AuthenticatedBuscarRouteImport } from './routes/_authenticated/buscar'
 import { Route as AuthenticatedVagaIdRouteImport } from './routes/_authenticated/vaga.$id'
+import { Route as AuthenticatedSetorIdRouteImport } from './routes/_authenticated/setor.$id'
+import { Route as AuthenticatedOrdemIdRouteImport } from './routes/_authenticated/ordem.$id'
+import { Route as AuthenticatedCaixaIdRouteImport } from './routes/_authenticated/caixa.$id'
+import { Route as AuthenticatedAdminUsuariosRouteImport } from './routes/_authenticated/admin.usuarios'
 
-const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
-  id: '/_authenticated',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
@@ -41,19 +41,29 @@ const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedBuscarRoute = AuthenticatedBuscarRouteImport.update({
-  id: '/buscar',
-  path: '/buscar',
+const AuthenticatedSetoresRoute = AuthenticatedSetoresRouteImport.update({
+  id: '/setores',
+  path: '/setores',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedCalendarioRoute = AuthenticatedCalendarioRouteImport.update({
-  id: '/calendario',
-  path: '/calendario',
+const AuthenticatedPreEntradaRoute = AuthenticatedPreEntradaRouteImport.update({
+  id: '/pre-entrada',
+  path: '/pre-entrada',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedEtiquetasRoute = AuthenticatedEtiquetasRouteImport.update({
-  id: '/etiquetas',
-  path: '/etiquetas',
+const AuthenticatedOrdensRoute = AuthenticatedOrdensRouteImport.update({
+  id: '/ordens',
+  path: '/ordens',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedItensRoute = AuthenticatedItensRouteImport.update({
+  id: '/itens',
+  path: '/itens',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedHistoricoRoute = AuthenticatedHistoricoRouteImport.update({
+  id: '/historico',
+  path: '/historico',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedFornecedoresRoute =
@@ -62,29 +72,39 @@ const AuthenticatedFornecedoresRoute =
     path: '/fornecedores',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const AuthenticatedHistoricoRoute = AuthenticatedHistoricoRouteImport.update({
-  id: '/historico',
-  path: '/historico',
+const AuthenticatedEtiquetasRoute = AuthenticatedEtiquetasRouteImport.update({
+  id: '/etiquetas',
+  path: '/etiquetas',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedItensRoute = AuthenticatedItensRouteImport.update({
-  id: '/itens',
-  path: '/itens',
+const AuthenticatedCalendarioRoute = AuthenticatedCalendarioRouteImport.update({
+  id: '/calendario',
+  path: '/calendario',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedOrdensRoute = AuthenticatedOrdensRouteImport.update({
-  id: '/ordens',
-  path: '/ordens',
+const AuthenticatedBuscarRoute = AuthenticatedBuscarRouteImport.update({
+  id: '/buscar',
+  path: '/buscar',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedPreEntradaRoute = AuthenticatedPreEntradaRouteImport.update({
-  id: '/pre-entrada',
-  path: '/pre-entrada',
+const AuthenticatedVagaIdRoute = AuthenticatedVagaIdRouteImport.update({
+  id: '/vaga/$id',
+  path: '/vaga/$id',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedSetoresRoute = AuthenticatedSetoresRouteImport.update({
-  id: '/setores',
-  path: '/setores',
+const AuthenticatedSetorIdRoute = AuthenticatedSetorIdRouteImport.update({
+  id: '/setor/$id',
+  path: '/setor/$id',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedOrdemIdRoute = AuthenticatedOrdemIdRouteImport.update({
+  id: '/ordem/$id',
+  path: '/ordem/$id',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedCaixaIdRoute = AuthenticatedCaixaIdRouteImport.update({
+  id: '/caixa/$id',
+  path: '/caixa/$id',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedAdminUsuariosRoute =
@@ -93,26 +113,6 @@ const AuthenticatedAdminUsuariosRoute =
     path: '/admin/usuarios',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const AuthenticatedCaixaIdRoute = AuthenticatedCaixaIdRouteImport.update({
-  id: '/caixa/$id',
-  path: '/caixa/$id',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedOrdemIdRoute = AuthenticatedOrdemIdRouteImport.update({
-  id: '/ordem/$id',
-  path: '/ordem/$id',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedSetorIdRoute = AuthenticatedSetorIdRouteImport.update({
-  id: '/setor/$id',
-  path: '/setor/$id',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedVagaIdRoute = AuthenticatedVagaIdRouteImport.update({
-  id: '/vaga/$id',
-  path: '/vaga/$id',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
@@ -235,18 +235,18 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/_authenticated': {
-      id: '/_authenticated'
-      path: ''
-      fullPath: '/'
-      preLoaderRoute: typeof AuthenticatedRouteRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/auth': {
       id: '/auth'
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/': {
@@ -256,53 +256,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/buscar': {
-      id: '/_authenticated/buscar'
-      path: '/buscar'
-      fullPath: '/buscar'
-      preLoaderRoute: typeof AuthenticatedBuscarRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/calendario': {
-      id: '/_authenticated/calendario'
-      path: '/calendario'
-      fullPath: '/calendario'
-      preLoaderRoute: typeof AuthenticatedCalendarioRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/etiquetas': {
-      id: '/_authenticated/etiquetas'
-      path: '/etiquetas'
-      fullPath: '/etiquetas'
-      preLoaderRoute: typeof AuthenticatedEtiquetasRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/fornecedores': {
-      id: '/_authenticated/fornecedores'
-      path: '/fornecedores'
-      fullPath: '/fornecedores'
-      preLoaderRoute: typeof AuthenticatedFornecedoresRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/historico': {
-      id: '/_authenticated/historico'
-      path: '/historico'
-      fullPath: '/historico'
-      preLoaderRoute: typeof AuthenticatedHistoricoRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/itens': {
-      id: '/_authenticated/itens'
-      path: '/itens'
-      fullPath: '/itens'
-      preLoaderRoute: typeof AuthenticatedItensRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/ordens': {
-      id: '/_authenticated/ordens'
-      path: '/ordens'
-      fullPath: '/ordens'
-      preLoaderRoute: typeof AuthenticatedOrdensRouteImport
+    '/_authenticated/setores': {
+      id: '/_authenticated/setores'
+      path: '/setores'
+      fullPath: '/setores'
+      preLoaderRoute: typeof AuthenticatedSetoresRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/pre-entrada': {
@@ -312,32 +270,60 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPreEntradaRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/setores': {
-      id: '/_authenticated/setores'
-      path: '/setores'
-      fullPath: '/setores'
-      preLoaderRoute: typeof AuthenticatedSetoresRouteImport
+    '/_authenticated/ordens': {
+      id: '/_authenticated/ordens'
+      path: '/ordens'
+      fullPath: '/ordens'
+      preLoaderRoute: typeof AuthenticatedOrdensRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/admin/usuarios': {
-      id: '/_authenticated/admin/usuarios'
-      path: '/admin/usuarios'
-      fullPath: '/admin/usuarios'
-      preLoaderRoute: typeof AuthenticatedAdminUsuariosRouteImport
+    '/_authenticated/itens': {
+      id: '/_authenticated/itens'
+      path: '/itens'
+      fullPath: '/itens'
+      preLoaderRoute: typeof AuthenticatedItensRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/caixa/$id': {
-      id: '/_authenticated/caixa/$id'
-      path: '/caixa/$id'
-      fullPath: '/caixa/$id'
-      preLoaderRoute: typeof AuthenticatedCaixaIdRouteImport
+    '/_authenticated/historico': {
+      id: '/_authenticated/historico'
+      path: '/historico'
+      fullPath: '/historico'
+      preLoaderRoute: typeof AuthenticatedHistoricoRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/ordem/$id': {
-      id: '/_authenticated/ordem/$id'
-      path: '/ordem/$id'
-      fullPath: '/ordem/$id'
-      preLoaderRoute: typeof AuthenticatedOrdemIdRouteImport
+    '/_authenticated/fornecedores': {
+      id: '/_authenticated/fornecedores'
+      path: '/fornecedores'
+      fullPath: '/fornecedores'
+      preLoaderRoute: typeof AuthenticatedFornecedoresRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/etiquetas': {
+      id: '/_authenticated/etiquetas'
+      path: '/etiquetas'
+      fullPath: '/etiquetas'
+      preLoaderRoute: typeof AuthenticatedEtiquetasRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/calendario': {
+      id: '/_authenticated/calendario'
+      path: '/calendario'
+      fullPath: '/calendario'
+      preLoaderRoute: typeof AuthenticatedCalendarioRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/buscar': {
+      id: '/_authenticated/buscar'
+      path: '/buscar'
+      fullPath: '/buscar'
+      preLoaderRoute: typeof AuthenticatedBuscarRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/vaga/$id': {
+      id: '/_authenticated/vaga/$id'
+      path: '/vaga/$id'
+      fullPath: '/vaga/$id'
+      preLoaderRoute: typeof AuthenticatedVagaIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/setor/$id': {
@@ -347,11 +333,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSetorIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/vaga/$id': {
-      id: '/_authenticated/vaga/$id'
-      path: '/vaga/$id'
-      fullPath: '/vaga/$id'
-      preLoaderRoute: typeof AuthenticatedVagaIdRouteImport
+    '/_authenticated/ordem/$id': {
+      id: '/_authenticated/ordem/$id'
+      path: '/ordem/$id'
+      fullPath: '/ordem/$id'
+      preLoaderRoute: typeof AuthenticatedOrdemIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/caixa/$id': {
+      id: '/_authenticated/caixa/$id'
+      path: '/caixa/$id'
+      fullPath: '/caixa/$id'
+      preLoaderRoute: typeof AuthenticatedCaixaIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admin/usuarios': {
+      id: '/_authenticated/admin/usuarios'
+      path: '/admin/usuarios'
+      fullPath: '/admin/usuarios'
+      preLoaderRoute: typeof AuthenticatedAdminUsuariosRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
   }
