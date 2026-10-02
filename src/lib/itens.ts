@@ -383,3 +383,38 @@ export async function upsertLote(rows: Record<string, unknown>[]) {
   const { error } = await sb.from("itens").upsert(rows, { onConflict: "codigo_interno" });
   if (error) throw error;
 }
+
+// ---------- FORNECEDORES (apoio) ----------
+export type FornecedorOpcao = { id: string; codigo: number | null; razao_social: string | null; nome_fantasia: string | null; cnpj: string | null };
+
+async function listarFornecedoresOpcoes(): Promise<FornecedorOpcao[]> {
+  const todos: FornecedorOpcao[] = [];
+  for (let i = 0; ; i += 1000) {
+    const { data, error } = await sb
+      .from("fornecedores")
+      .select("id, codigo, razao_social, nome_fantasia, cnpj")
+      .order("codigo", { ascending: true })
+      .range(i, i + 999);
+    if (error) throw error;
+    todos.push(...((data ?? []) as FornecedorOpcao[]));
+    if ((data ?? []).length < 1000) break;
+  }
+  return todos;
+}
+
+export function useFornecedoresOpcoes(ativo = true) {
+  return useQuery({ queryKey: ["fornecedores-opcoes"], enabled: ativo, queryFn: listarFornecedoresOpcoes });
+}
+
+/** Mapa de código / razão social / nome fantasia / CNPJ (minúsculo ou só dígitos) → id */
+export async function mapaFornecedores(): Promise<Map<string, string>> {
+  const m = new Map<string, string>();
+  for (const f of await listarFornecedoresOpcoes()) {
+    if (f.codigo !== null) m.set(String(f.codigo), f.id);
+    if (f.razao_social) m.set(f.razao_social.trim().toLowerCase(), f.id);
+    if (f.nome_fantasia) m.set(f.nome_fantasia.trim().toLowerCase(), f.id);
+    const d = (f.cnpj ?? "").replace(/\D/g, "");
+    if (d) m.set(d, f.id);
+  }
+  return m;
+}
