@@ -21,7 +21,21 @@ export const CAMPOS_FIXOS = [
   "tipo_item",
   "status",
   "imagem_url",
+  "unidade_medida",
+  "codigo_barras",
+  "fornecedor_id",
+  "custo_aquisicao",
+  "preco_venda",
+  "estoque_minimo",
+  "estoque_maximo",
+  "deposito",
+  "corredor",
+  "prateleira",
 ] as const;
+
+export const UNIDADES = ["UN", "KG", "G", "CX", "PCT", "L", "ML", "M", "M²", "RL", "PR"];
+export const CAMPOS_MOEDA = ["custo_aquisicao", "preco_venda"];
+const SELECT_ITEM = "*, fornecedor:fornecedores(id, codigo, razao_social, nome_fantasia)";
 export type CampoFixo = (typeof CAMPOS_FIXOS)[number];
 
 export const COLUNAS_PADRAO = ["codigo_interno", "referencia", "descricao", "marca", "setor"];
@@ -36,6 +50,17 @@ export type Item = {
   tipo_item: string | null;
   status: string | null;
   imagem_url: string | null;
+  unidade_medida: string | null;
+  codigo_barras: string | null;
+  fornecedor_id: string | null;
+  fornecedor?: { id: string; codigo: number | null; razao_social: string | null; nome_fantasia: string | null } | null;
+  custo_aquisicao: number | null;
+  preco_venda: number | null;
+  estoque_minimo: number | null;
+  estoque_maximo: number | null;
+  deposito: string | null;
+  corredor: string | null;
+  prateleira: string | null;
   extras: Record<string, unknown>;
   criado_em: string;
   atualizado_em: string;
@@ -74,6 +99,18 @@ export function isFixo(chave: string) {
 }
 
 export function valorCampo(item: Item, chave: string): unknown {
+  if (chave === "fornecedor_id") {
+    const f = item.fornecedor;
+    return f ? `${f.codigo ?? ""} - ${f.razao_social ?? f.nome_fantasia ?? ""}`.replace(/^ - /, "") : null;
+  }
+  if (chave === "status") {
+    const st = item.status;
+    return st === "inativo" ? "Inativo" : st === "ativo" ? "Ativo" : st;
+  }
+  if (CAMPOS_MOEDA.includes(chave)) {
+    const v = (item as unknown as Record<string, unknown>)[chave];
+    return v === null || v === undefined ? null : Number(v).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+  }
   if (isFixo(chave)) return (item as unknown as Record<string, unknown>)[chave];
   return item.extras?.[chave];
 }
@@ -173,8 +210,8 @@ type FiltroArgs = Pick<ItensQueryArgs, "q" | "filtros" | "ordenarPor" | "ordem">
 
 function montarQuery(args: FiltroArgs, contar: boolean) {
   let query = contar
-    ? sb.from("itens").select("*", { count: "exact" })
-    : sb.from("itens").select("*");
+    ? sb.from("itens").select(SELECT_ITEM, { count: "exact" })
+    : sb.from("itens").select(SELECT_ITEM);
 
   const termo = args.q.trim();
   if (termo) {
@@ -186,6 +223,8 @@ function montarQuery(args: FiltroArgs, contar: boolean) {
       `setor.ilike.${like}`,
       `tipo_item.ilike.${like}`,
       `status.ilike.${like}`,
+      `codigo_barras.ilike.${like}`,
+      `deposito.ilike.${like}`,
     ];
     if (/^\d+$/.test(termo)) ors.push(`codigo_interno.eq.${termo}`);
     query = query.or(ors.join(","));
@@ -343,4 +382,39 @@ export async function buscarCodigosExistentes(codigos: number[]): Promise<Set<nu
 export async function upsertLote(rows: Record<string, unknown>[]) {
   const { error } = await sb.from("itens").upsert(rows, { onConflict: "codigo_interno" });
   if (error) throw error;
+}
+
+// ---------- FORNECEDORES (apoio) ----------
+export type FornecedorOpcao = { id: string; codigo: number | null; razao_social: string | null; nome_fantasia: string | null; cnpj: string | null };
+
+async function listarFornecedoresOpcoes(): Promise<FornecedorOpcao[]> {
+  const todos: FornecedorOpcao[] = [];
+  for (let i = 0; ; i += 1000) {
+    const { data, error } = await sb
+      .from("fornecedores")
+      .select("id, codigo, razao_social, nome_fantasia, cnpj")
+      .order("codigo", { ascending: true })
+      .range(i, i + 999);
+    if (error) throw error;
+    todos.push(...((data ?? []) as FornecedorOpcao[]));
+    if ((data ?? []).length < 1000) break;
+  }
+  return todos;
+}
+
+export function useFornecedoresOpcoes(ativo = true) {
+  return useQuery({ queryKey: ["fornecedores-opcoes"], enabled: ativo, queryFn: listarFornecedoresOpcoes });
+}
+
+/** Mapa de código / razão social / nome fantasia / CNPJ (minúsculo ou só dígitos) → id */
+export async function mapaFornecedores(): Promise<Map<string, string>> {
+  const m = new Map<string, string>();
+  for (const f of await listarFornecedoresOpcoes()) {
+    if (f.codigo !== null) m.set(String(f.codigo), f.id);
+    if (f.razao_social) m.set(f.razao_social.trim().toLowerCase(), f.id);
+    if (f.nome_fantasia) m.set(f.nome_fantasia.trim().toLowerCase(), f.id);
+    const d = (f.cnpj ?? "").replace(/\D/g, "");
+    if (d) m.set(d, f.id);
+  }
+  return m;
 }

@@ -17,6 +17,7 @@ import { toast } from "sonner";
 import { AlertTriangle, CheckCircle2, Download, FileSpreadsheet, Trash2, UploadCloud } from "lucide-react";
 import {
   buscarCodigosExistentes,
+  mapaFornecedores,
   CAMPOS_FIXOS,
   upsertLote,
   useCriarCampos,
@@ -58,6 +59,26 @@ function sugerir(coluna: string, campos: ItemCampo[]): Destino {
     situacao: "status",
     imagem: "imagem_url",
     foto: "imagem_url",
+    un: "unidade_medida",
+    unidade: "unidade_medida",
+    und: "unidade_medida",
+    ean: "codigo_barras",
+    gtin: "codigo_barras",
+    cod_barras: "codigo_barras",
+    codigo_de_barras: "codigo_barras",
+    fornecedor: "fornecedor_id",
+    custo: "custo_aquisicao",
+    preco_custo: "custo_aquisicao",
+    preco: "preco_venda",
+    preco_de_venda: "preco_venda",
+    venda: "preco_venda",
+    estoque_min: "estoque_minimo",
+    minimo: "estoque_minimo",
+    estoque_max: "estoque_maximo",
+    maximo: "estoque_maximo",
+    deposito: "deposito",
+    corredor: "corredor",
+    prateleira: "prateleira",
   };
   if (aliases[n]) return { tipo: "fixo", chave: aliases[n] };
   return { tipo: "extra", chave: n };
@@ -84,6 +105,7 @@ export function ImportarExcel({
   const [existentes, setExistentes] = useState<Set<number>>(new Set());
   const inputRef = useRef<HTMLInputElement>(null);
   const criarCampos = useCriarCampos();
+  const [fornMapa, setFornMapa] = useState<Map<string, string>>(new Map());
 
   const reset = () => {
     setEtapa("upload");
@@ -150,6 +172,15 @@ export function ImportarExcel({
           if (dest.chave === "codigo_interno") {
             const num = Number(String(v ?? "").trim());
             codigo = Number.isFinite(num) && String(v ?? "").trim() !== "" ? Math.trunc(num) : null;
+          } else if (["custo_aquisicao", "preco_venda", "estoque_minimo", "estoque_maximo"].includes(dest.chave)) {
+            const t = String(v ?? "").trim().replace(/[R$\s]/g, "");
+            const n = Number(t.includes(",") ? t.replace(/\./g, "").replace(",", ".") : t);
+            item[dest.chave] = t === "" || !Number.isFinite(n) ? null : n;
+          } else if (dest.chave === "status") {
+            item.status = /^(inativo|i|n|nao|não|0|false)$/i.test(String(v ?? "").trim()) ? "inativo" : "ativo";
+          } else if (dest.chave === "fornecedor_id") {
+            const t = String(v ?? "").trim();
+            item.fornecedor_id = t ? (fornMapa.get(t.toLowerCase()) ?? fornMapa.get(t.replace(/\D/g, "")) ?? null) : null;
           } else {
             item[dest.chave] = v === null || v === undefined || v === "" ? null : String(v);
           }
@@ -172,7 +203,7 @@ export function ImportarExcel({
 
     const atualizados = validos.filter((v) => existentes.has(v.codigo)).length;
     return { erros, validos, novos: validos.length - atualizados, atualizados };
-  }, [etapa, linhas, colunas, mapa, existentes]);
+  }, [etapa, linhas, colunas, mapa, existentes, fornMapa]);
 
   const irParaPrevia = async () => {
     const codigosCol = Object.entries(mapa).find(([, d]) => d.tipo === "fixo" && d.chave === "codigo_interno")?.[0];
@@ -182,6 +213,9 @@ export function ImportarExcel({
           .filter((n) => Number.isFinite(n) && n !== 0)
       : [];
     try {
+      if (Object.values(mapa).some((d) => d.tipo === "fixo" && d.chave === "fornecedor_id")) {
+        setFornMapa(await mapaFornecedores());
+      }
       setExistentes(await buscarCodigosExistentes(Array.from(new Set(codigos))));
     } catch (e) {
       toast.error((e as Error).message);
