@@ -312,47 +312,85 @@ export type Database = {
       itens: {
         Row: {
           atualizado_em: string
+          codigo_barras: string | null
           codigo_interno: number
+          corredor: string | null
           criado_em: string
+          custo_aquisicao: number | null
+          deposito: string | null
           descricao: string | null
+          estoque_maximo: number | null
+          estoque_minimo: number | null
           extras: Json
+          fornecedor_id: string | null
           id: string
           imagem_url: string | null
           marca: string | null
+          prateleira: string | null
+          preco_venda: number | null
           referencia: string | null
           setor: string | null
           status: string | null
           tipo_item: string | null
+          unidade_medida: string | null
         }
         Insert: {
           atualizado_em?: string
+          codigo_barras?: string | null
           codigo_interno: number
+          corredor?: string | null
           criado_em?: string
+          custo_aquisicao?: number | null
+          deposito?: string | null
           descricao?: string | null
+          estoque_maximo?: number | null
+          estoque_minimo?: number | null
           extras?: Json
+          fornecedor_id?: string | null
           id?: string
           imagem_url?: string | null
           marca?: string | null
+          prateleira?: string | null
+          preco_venda?: number | null
           referencia?: string | null
           setor?: string | null
           status?: string | null
           tipo_item?: string | null
+          unidade_medida?: string | null
         }
         Update: {
           atualizado_em?: string
+          codigo_barras?: string | null
           codigo_interno?: number
+          corredor?: string | null
           criado_em?: string
+          custo_aquisicao?: number | null
+          deposito?: string | null
           descricao?: string | null
+          estoque_maximo?: number | null
+          estoque_minimo?: number | null
           extras?: Json
+          fornecedor_id?: string | null
           id?: string
           imagem_url?: string | null
           marca?: string | null
+          prateleira?: string | null
+          preco_venda?: number | null
           referencia?: string | null
           setor?: string | null
           status?: string | null
           tipo_item?: string | null
+          unidade_medida?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "itens_fornecedor_id_fkey"
+            columns: ["fornecedor_id"]
+            isOneToOne: false
+            referencedRelation: "fornecedores"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       movimentacoes_caixa: {
         Row: {
