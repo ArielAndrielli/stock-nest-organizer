@@ -21,7 +21,21 @@ export const CAMPOS_FIXOS = [
   "tipo_item",
   "status",
   "imagem_url",
+  "unidade_medida",
+  "codigo_barras",
+  "fornecedor_id",
+  "custo_aquisicao",
+  "preco_venda",
+  "estoque_minimo",
+  "estoque_maximo",
+  "deposito",
+  "corredor",
+  "prateleira",
 ] as const;
+
+export const UNIDADES = ["UN", "KG", "G", "CX", "PCT", "L", "ML", "M", "M²", "RL", "PR"];
+export const CAMPOS_MOEDA = ["custo_aquisicao", "preco_venda"];
+const SELECT_ITEM = "*, fornecedor:fornecedores(id, codigo, razao_social, nome_fantasia)";
 export type CampoFixo = (typeof CAMPOS_FIXOS)[number];
 
 export const COLUNAS_PADRAO = ["codigo_interno", "referencia", "descricao", "marca", "setor"];
@@ -36,6 +50,17 @@ export type Item = {
   tipo_item: string | null;
   status: string | null;
   imagem_url: string | null;
+  unidade_medida: string | null;
+  codigo_barras: string | null;
+  fornecedor_id: string | null;
+  fornecedor?: { id: string; codigo: number | null; razao_social: string | null; nome_fantasia: string | null } | null;
+  custo_aquisicao: number | null;
+  preco_venda: number | null;
+  estoque_minimo: number | null;
+  estoque_maximo: number | null;
+  deposito: string | null;
+  corredor: string | null;
+  prateleira: string | null;
   extras: Record<string, unknown>;
   criado_em: string;
   atualizado_em: string;
@@ -74,6 +99,18 @@ export function isFixo(chave: string) {
 }
 
 export function valorCampo(item: Item, chave: string): unknown {
+  if (chave === "fornecedor_id") {
+    const f = item.fornecedor;
+    return f ? `${f.codigo ?? ""} - ${f.razao_social ?? f.nome_fantasia ?? ""}`.replace(/^ - /, "") : null;
+  }
+  if (chave === "status") {
+    const st = item.status;
+    return st === "inativo" ? "Inativo" : st === "ativo" ? "Ativo" : st;
+  }
+  if (CAMPOS_MOEDA.includes(chave)) {
+    const v = (item as unknown as Record<string, unknown>)[chave];
+    return v === null || v === undefined ? null : Number(v).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+  }
   if (isFixo(chave)) return (item as unknown as Record<string, unknown>)[chave];
   return item.extras?.[chave];
 }
@@ -173,8 +210,8 @@ type FiltroArgs = Pick<ItensQueryArgs, "q" | "filtros" | "ordenarPor" | "ordem">
 
 function montarQuery(args: FiltroArgs, contar: boolean) {
   let query = contar
-    ? sb.from("itens").select("*", { count: "exact" })
-    : sb.from("itens").select("*");
+    ? sb.from("itens").select(SELECT_ITEM, { count: "exact" })
+    : sb.from("itens").select(SELECT_ITEM);
 
   const termo = args.q.trim();
   if (termo) {
@@ -186,6 +223,8 @@ function montarQuery(args: FiltroArgs, contar: boolean) {
       `setor.ilike.${like}`,
       `tipo_item.ilike.${like}`,
       `status.ilike.${like}`,
+      `codigo_barras.ilike.${like}`,
+      `deposito.ilike.${like}`,
     ];
     if (/^\d+$/.test(termo)) ors.push(`codigo_interno.eq.${termo}`);
     query = query.or(ors.join(","));
