@@ -51,6 +51,7 @@ import { FiltrosSheet } from "@/components/itens/FiltrosSheet";
 import { ItemDetalhes } from "@/components/itens/ItemDetalhes";
 import { ImportarExcel } from "@/components/itens/ImportarExcel";
 import { ItemForm } from "@/components/itens/ItemForm";
+import { StatusBadge } from "@/components/itens/StatusBadge";
 import { ExportarDialog } from "@/components/itens/ExportarDialog";
 import {
   Select,
@@ -368,6 +369,8 @@ function ItensPage() {
                       <td key={c.chave} className="max-w-xs truncate p-3">
                         {c.chave === "imagem_url" && item.imagem_url ? (
                           <img src={item.imagem_url} alt="" className="h-8 w-8 rounded object-cover" />
+                        ) : c.chave === "status" ? (
+                          <StatusBadge status={item.status} />
                         ) : (
                           formatarValor(valorCampo(item, c.chave))
                         )}
