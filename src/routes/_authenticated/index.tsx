@@ -8,6 +8,8 @@ import { AgendaMes } from "@/components/calendario/AgendaMes";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDashboardData } from "@/lib/queries";
+import { useKpisEstoque } from "@/lib/kpis";
+import { ArrowRight, CircleCheck, CircleOff, Wallet } from "lucide-react";
 import {
   STATUS_ORDEM, STATUS_ROTULO, TIPOS_MATERIAL, TIPO_MATERIAL_ROTULO, useOrdensStats,
 } from "@/lib/ordens";
@@ -18,6 +20,8 @@ export const Route = createFileRoute("/_authenticated/")({
     meta: [
       { title: "Dashboard · Estoque" },
       { name: "description", content: "Visão geral do estoque: setores, vagas, caixas e ocupação." },
+      { property: "og:title", content: "Dashboard · Estoque" },
+      { property: "og:description", content: "Indicadores de estoque, itens, ordens e movimentações." },
     ],
   }),
   component: Dashboard,
@@ -99,6 +103,8 @@ function Dashboard() {
         <Stat icon={<PackageOpen className="h-5 w-5" />} label="Caixas" value={totalCaixas} />
         <Stat icon={<PackageOpen className="h-5 w-5" />} label="Ocupação total" value={`${pctOcupacao}%`} hint={somaCap > 0 ? `${somaOc} / ${somaCap} unidades` : "Sem capacidade definida"} />
       </div>
+
+      <KpisItens />
 
       <div className="mt-6 grid gap-4 lg:grid-cols-2">
         <Card className="animate-fade-in">
@@ -280,3 +286,68 @@ function OrdensStats() {
   );
 }
 
+
+const brl = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+
+function KpisItens() {
+  const { data, isLoading, error } = useKpisEstoque();
+  if (error) return <p className="mt-6 text-sm text-destructive">Não foi possível carregar os indicadores de itens.</p>;
+  if (isLoading || !data) {
+    return <div className="mt-6 grid gap-4 sm:grid-cols-3">{Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-24 rounded-xl" />)}</div>;
+  }
+  const total = data.ativos + data.inativos;
+  return (
+    <section className="mt-6 space-y-4">
+      <div className="grid gap-4 sm:grid-cols-3">
+        <Stat icon={<Wallet className="h-5 w-5" />} label="Valor em estoque (custo)" value={brl(data.valorCusto)}
+          hint={data.semCusto ? `${data.semCusto.toLocaleString("pt-BR")} itens sem custo informado` : "Soma do custo de aquisição"} />
+        <Stat icon={<CircleCheck className="h-5 w-5" />} label="Itens ativos" value={data.ativos.toLocaleString("pt-BR")}
+          hint={total ? `${Math.round((data.ativos / total) * 100)}% do cadastro` : undefined} />
+        <Stat icon={<CircleOff className="h-5 w-5" />} label="Itens inativos" value={data.inativos.toLocaleString("pt-BR")} />
+      </div>
+      <div className="grid gap-4 lg:grid-cols-2">
+        <Card className="animate-fade-in">
+          <CardHeader><CardTitle>Itens por setor</CardTitle></CardHeader>
+          <CardContent className="h-72">
+            {data.setores.length === 0 ? <p className="text-sm text-muted-foreground">Nenhum item cadastrado.</p> : (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={data.setores} layout="vertical" margin={{ left: 16 }}>
+                  <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
+                  <XAxis type="number" allowDecimals={false} tick={{ fontSize: 12 }} />
+                  <YAxis type="category" dataKey="nome" width={110} tick={{ fontSize: 12 }} />
+                  <Tooltip />
+                  <Bar dataKey="itens" fill="hsl(217 91% 60%)" radius={[0, 6, 6, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
+          </CardContent>
+        </Card>
+        <Card className="animate-fade-in">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0">
+            <CardTitle>Movimentações recentes</CardTitle>
+            <Link to="/historico" className="text-sm font-medium text-primary hover:underline">Ver histórico</Link>
+          </CardHeader>
+          <CardContent>
+            {data.movimentacoes.length === 0 ? <p className="text-sm text-muted-foreground">Nenhuma movimentação registrada.</p> : (
+              <ul className="divide-y">
+                {data.movimentacoes.map((m) => (
+                  <li key={m.id} className="flex items-center justify-between gap-3 py-2 text-sm">
+                    <div className="min-w-0">
+                      <div className="truncate font-medium">{m.caixa?.nome ?? "Caixa"}</div>
+                      <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                        {m.origem?.codigo ?? "—"} <ArrowRight className="h-3 w-3" /> {m.destino?.codigo ?? "—"}
+                      </div>
+                    </div>
+                    <span className="shrink-0 text-xs text-muted-foreground">
+                      {new Date(m.criado_em).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" })}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    </section>
+  );
+}
