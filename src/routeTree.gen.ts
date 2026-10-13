@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
+import { Route as AuthenticatedAssistenteRouteImport } from './routes/_authenticated/assistente'
 import { Route as AuthenticatedBuscarRouteImport } from './routes/_authenticated/buscar'
 import { Route as AuthenticatedCalendarioRouteImport } from './routes/_authenticated/calendario'
 import { Route as AuthenticatedEtiquetasRouteImport } from './routes/_authenticated/etiquetas'
@@ -21,6 +22,7 @@ import { Route as AuthenticatedItensRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedOrdensRouteImport } from './routes/_authenticated/ordens'
 import { Route as AuthenticatedPreEntradaRouteImport } from './routes/_authenticated/pre-entrada'
 import { Route as AuthenticatedSetoresRouteImport } from './routes/_authenticated/setores'
+import { Route as ApiAssistenteRouteImport } from './routes/api/assistente'
 import { Route as AuthenticatedAdminUsuariosRouteImport } from './routes/_authenticated/admin.usuarios'
 import { Route as AuthenticatedCaixaIdRouteImport } from './routes/_authenticated/caixa.$id'
 import { Route as AuthenticatedOrdemIdRouteImport } from './routes/_authenticated/ordem.$id'
@@ -39,6 +41,11 @@ const AuthRoute = AuthRouteImport.update({
 const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedAssistenteRoute = AuthenticatedAssistenteRouteImport.update({
+  id: '/assistente',
+  path: '/assistente',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedBuscarRoute = AuthenticatedBuscarRouteImport.update({
@@ -87,6 +94,11 @@ const AuthenticatedSetoresRoute = AuthenticatedSetoresRouteImport.update({
   path: '/setores',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const ApiAssistenteRoute = ApiAssistenteRouteImport.update({
+  id: '/api/assistente',
+  path: '/api/assistente',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedAdminUsuariosRoute =
   AuthenticatedAdminUsuariosRouteImport.update({
     id: '/admin/usuarios',
@@ -117,6 +129,7 @@ const AuthenticatedVagaIdRoute = AuthenticatedVagaIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
   '/auth': typeof AuthRoute
+  '/assistente': typeof AuthenticatedAssistenteRoute
   '/buscar': typeof AuthenticatedBuscarRoute
   '/calendario': typeof AuthenticatedCalendarioRoute
   '/etiquetas': typeof AuthenticatedEtiquetasRoute
@@ -126,6 +139,7 @@ export interface FileRoutesByFullPath {
   '/ordens': typeof AuthenticatedOrdensRoute
   '/pre-entrada': typeof AuthenticatedPreEntradaRoute
   '/setores': typeof AuthenticatedSetoresRoute
+  '/api/assistente': typeof ApiAssistenteRoute
   '/admin/usuarios': typeof AuthenticatedAdminUsuariosRoute
   '/caixa/$id': typeof AuthenticatedCaixaIdRoute
   '/ordem/$id': typeof AuthenticatedOrdemIdRoute
@@ -134,6 +148,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
+  '/assistente': typeof AuthenticatedAssistenteRoute
   '/buscar': typeof AuthenticatedBuscarRoute
   '/calendario': typeof AuthenticatedCalendarioRoute
   '/etiquetas': typeof AuthenticatedEtiquetasRoute
@@ -143,6 +158,7 @@ export interface FileRoutesByTo {
   '/ordens': typeof AuthenticatedOrdensRoute
   '/pre-entrada': typeof AuthenticatedPreEntradaRoute
   '/setores': typeof AuthenticatedSetoresRoute
+  '/api/assistente': typeof ApiAssistenteRoute
   '/': typeof AuthenticatedIndexRoute
   '/admin/usuarios': typeof AuthenticatedAdminUsuariosRoute
   '/caixa/$id': typeof AuthenticatedCaixaIdRoute
@@ -154,6 +170,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/_authenticated/assistente': typeof AuthenticatedAssistenteRoute
   '/_authenticated/buscar': typeof AuthenticatedBuscarRoute
   '/_authenticated/calendario': typeof AuthenticatedCalendarioRoute
   '/_authenticated/etiquetas': typeof AuthenticatedEtiquetasRoute
@@ -163,6 +180,7 @@ export interface FileRoutesById {
   '/_authenticated/ordens': typeof AuthenticatedOrdensRoute
   '/_authenticated/pre-entrada': typeof AuthenticatedPreEntradaRoute
   '/_authenticated/setores': typeof AuthenticatedSetoresRoute
+  '/api/assistente': typeof ApiAssistenteRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/admin/usuarios': typeof AuthenticatedAdminUsuariosRoute
   '/_authenticated/caixa/$id': typeof AuthenticatedCaixaIdRoute
@@ -175,6 +193,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/assistente'
     | '/buscar'
     | '/calendario'
     | '/etiquetas'
@@ -184,6 +203,7 @@ export interface FileRouteTypes {
     | '/ordens'
     | '/pre-entrada'
     | '/setores'
+    | '/api/assistente'
     | '/admin/usuarios'
     | '/caixa/$id'
     | '/ordem/$id'
@@ -192,6 +212,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/auth'
+    | '/assistente'
     | '/buscar'
     | '/calendario'
     | '/etiquetas'
@@ -201,6 +222,7 @@ export interface FileRouteTypes {
     | '/ordens'
     | '/pre-entrada'
     | '/setores'
+    | '/api/assistente'
     | '/'
     | '/admin/usuarios'
     | '/caixa/$id'
@@ -211,6 +233,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/_authenticated'
     | '/auth'
+    | '/_authenticated/assistente'
     | '/_authenticated/buscar'
     | '/_authenticated/calendario'
     | '/_authenticated/etiquetas'
@@ -220,6 +243,7 @@ export interface FileRouteTypes {
     | '/_authenticated/ordens'
     | '/_authenticated/pre-entrada'
     | '/_authenticated/setores'
+    | '/api/assistente'
     | '/_authenticated/'
     | '/_authenticated/admin/usuarios'
     | '/_authenticated/caixa/$id'
@@ -231,6 +255,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  ApiAssistenteRoute: typeof ApiAssistenteRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -254,6 +279,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof AuthenticatedIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/assistente': {
+      id: '/_authenticated/assistente'
+      path: '/assistente'
+      fullPath: '/assistente'
+      preLoaderRoute: typeof AuthenticatedAssistenteRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/buscar': {
@@ -319,6 +351,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSetoresRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/assistente': {
+      id: '/api/assistente'
+      path: '/api/assistente'
+      fullPath: '/api/assistente'
+      preLoaderRoute: typeof ApiAssistenteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/admin/usuarios': {
       id: '/_authenticated/admin/usuarios'
       path: '/admin/usuarios'
@@ -358,6 +397,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAssistenteRoute: typeof AuthenticatedAssistenteRoute
   AuthenticatedBuscarRoute: typeof AuthenticatedBuscarRoute
   AuthenticatedCalendarioRoute: typeof AuthenticatedCalendarioRoute
   AuthenticatedEtiquetasRoute: typeof AuthenticatedEtiquetasRoute
@@ -376,6 +416,7 @@ interface AuthenticatedRouteRouteChildren {
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAssistenteRoute: AuthenticatedAssistenteRoute,
   AuthenticatedBuscarRoute: AuthenticatedBuscarRoute,
   AuthenticatedCalendarioRoute: AuthenticatedCalendarioRoute,
   AuthenticatedEtiquetasRoute: AuthenticatedEtiquetasRoute,
@@ -399,6 +440,7 @@ const AuthenticatedRouteRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  ApiAssistenteRoute: ApiAssistenteRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

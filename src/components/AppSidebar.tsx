@@ -1,5 +1,6 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Boxes, CalendarDays, ScanLine, ClipboardList, Factory, LayoutDashboard, Package, PackageSearch, Printer, Truck } from "lucide-react";
+import { BrainCircuit, Boxes, CalendarDays, ScanLine, ClipboardList, Factory, LayoutDashboard, Package, PackageSearch, Printer, Truck } from "lucide-react";
+import { usePermissions } from "@/hooks/use-auth";
 import {
   Sidebar,
   SidebarContent,
@@ -22,9 +23,11 @@ const items = [
   { title: "Histórico", url: "/historico", icon: ClipboardList },
   { title: "Calendário", url: "/calendario", icon: CalendarDays },
   { title: "Etiquetas", url: "/etiquetas", icon: Printer },
+  { title: "Assistente IA", url: "/assistente", icon: BrainCircuit, admin: true },
 ];
 
 export function AppSidebar() {
+  const { isAdmin } = usePermissions();
   const path = useRouterState({ select: (s) => s.location.pathname });
   const isActive = (url: string) => (url === "/" ? path === "/" : path.startsWith(url));
 
@@ -46,7 +49,7 @@ export function AppSidebar() {
           <SidebarGroupLabel>Navegação</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {items.map((item) => (
+              {items.filter((item) => !("admin" in item) || isAdmin).map((item) => (
                 <SidebarMenuItem key={item.url}>
                   <SidebarMenuButton asChild isActive={isActive(item.url)} tooltip={item.title}>
                     <Link to={item.url} className="flex items-center gap-2">
