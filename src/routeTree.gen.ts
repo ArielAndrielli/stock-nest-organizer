@@ -21,6 +21,7 @@ import { Route as AuthenticatedItensRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedOrdensRouteImport } from './routes/_authenticated/ordens'
 import { Route as AuthenticatedPreEntradaRouteImport } from './routes/_authenticated/pre-entrada'
 import { Route as AuthenticatedSetoresRouteImport } from './routes/_authenticated/setores'
+import { Route as ApiAssistenteRouteImport } from './routes/api/assistente'
 import { Route as AuthenticatedAdminUsuariosRouteImport } from './routes/_authenticated/admin.usuarios'
 import { Route as AuthenticatedCaixaIdRouteImport } from './routes/_authenticated/caixa.$id'
 import { Route as AuthenticatedOrdemIdRouteImport } from './routes/_authenticated/ordem.$id'
@@ -87,6 +88,11 @@ const AuthenticatedSetoresRoute = AuthenticatedSetoresRouteImport.update({
   path: '/setores',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const ApiAssistenteRoute = ApiAssistenteRouteImport.update({
+  id: '/api/assistente',
+  path: '/api/assistente',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedAdminUsuariosRoute =
   AuthenticatedAdminUsuariosRouteImport.update({
     id: '/admin/usuarios',
@@ -126,6 +132,7 @@ export interface FileRoutesByFullPath {
   '/ordens': typeof AuthenticatedOrdensRoute
   '/pre-entrada': typeof AuthenticatedPreEntradaRoute
   '/setores': typeof AuthenticatedSetoresRoute
+  '/api/assistente': typeof ApiAssistenteRoute
   '/admin/usuarios': typeof AuthenticatedAdminUsuariosRoute
   '/caixa/$id': typeof AuthenticatedCaixaIdRoute
   '/ordem/$id': typeof AuthenticatedOrdemIdRoute
@@ -143,6 +150,7 @@ export interface FileRoutesByTo {
   '/ordens': typeof AuthenticatedOrdensRoute
   '/pre-entrada': typeof AuthenticatedPreEntradaRoute
   '/setores': typeof AuthenticatedSetoresRoute
+  '/api/assistente': typeof ApiAssistenteRoute
   '/': typeof AuthenticatedIndexRoute
   '/admin/usuarios': typeof AuthenticatedAdminUsuariosRoute
   '/caixa/$id': typeof AuthenticatedCaixaIdRoute
@@ -163,6 +171,7 @@ export interface FileRoutesById {
   '/_authenticated/ordens': typeof AuthenticatedOrdensRoute
   '/_authenticated/pre-entrada': typeof AuthenticatedPreEntradaRoute
   '/_authenticated/setores': typeof AuthenticatedSetoresRoute
+  '/api/assistente': typeof ApiAssistenteRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/admin/usuarios': typeof AuthenticatedAdminUsuariosRoute
   '/_authenticated/caixa/$id': typeof AuthenticatedCaixaIdRoute
@@ -184,6 +193,7 @@ export interface FileRouteTypes {
     | '/ordens'
     | '/pre-entrada'
     | '/setores'
+    | '/api/assistente'
     | '/admin/usuarios'
     | '/caixa/$id'
     | '/ordem/$id'
@@ -201,6 +211,7 @@ export interface FileRouteTypes {
     | '/ordens'
     | '/pre-entrada'
     | '/setores'
+    | '/api/assistente'
     | '/'
     | '/admin/usuarios'
     | '/caixa/$id'
@@ -220,6 +231,7 @@ export interface FileRouteTypes {
     | '/_authenticated/ordens'
     | '/_authenticated/pre-entrada'
     | '/_authenticated/setores'
+    | '/api/assistente'
     | '/_authenticated/'
     | '/_authenticated/admin/usuarios'
     | '/_authenticated/caixa/$id'
@@ -231,6 +243,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  ApiAssistenteRoute: typeof ApiAssistenteRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -319,6 +332,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSetoresRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/assistente': {
+      id: '/api/assistente'
+      path: '/api/assistente'
+      fullPath: '/api/assistente'
+      preLoaderRoute: typeof ApiAssistenteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/admin/usuarios': {
       id: '/_authenticated/admin/usuarios'
       path: '/admin/usuarios'
@@ -399,6 +419,7 @@ const AuthenticatedRouteRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  ApiAssistenteRoute: ApiAssistenteRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

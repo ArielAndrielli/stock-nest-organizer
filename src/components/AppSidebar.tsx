@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Boxes, CalendarDays, ScanLine, ClipboardList, Factory, LayoutDashboard, Package, PackageSearch, Printer, Truck } from "lucide-react";
+import { BrainCircuit, Boxes, CalendarDays, ScanLine, ClipboardList, Factory, LayoutDashboard, Package, PackageSearch, Printer, Truck } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -22,6 +22,7 @@ const items = [
   { title: "Histórico", url: "/historico", icon: ClipboardList },
   { title: "Calendário", url: "/calendario", icon: CalendarDays },
   { title: "Etiquetas", url: "/etiquetas", icon: Printer },
+  { title: "Assistente IA", url: "/assistente", icon: BrainCircuit, admin: true },
 ];
 
 export function AppSidebar() {
