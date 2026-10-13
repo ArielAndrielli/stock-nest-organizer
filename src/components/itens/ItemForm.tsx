@@ -18,6 +18,7 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { Check, ChevronsUpDown, X } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { useSetores } from "@/lib/queries";
 import {
   codigoInternoExiste,
   proximoCodigoInterno,
@@ -64,6 +65,7 @@ export function ItemForm({
   const criar = useCriarItem();
   const salvar = useSaveItem();
   const { data: fornecedores = [] } = useFornecedoresOpcoes(open);
+  const { data: setores = [] } = useSetores();
   const [codigo, setCodigo] = useState("");
   const [form, setForm] = useState<Record<string, string>>({});
   const [extras, setExtras] = useState<Record<string, string>>({});
@@ -167,7 +169,21 @@ export function ItemForm({
               {campo("referencia", "Referência")}
               {campo("codigo_barras", "Código de barras", { inputMode: "numeric", maxLength: 50 })}
               {campo("marca", "Marca")}
-              {campo("setor", "Setor")}
+              <div className="space-y-1.5">
+                <Label>Setor</Label>
+                <Select value={form.setor || "__nenhum__"} onValueChange={(v) => set("setor", v === "__nenhum__" ? "" : v)}>
+                  <SelectTrigger><SelectValue placeholder="Selecione o setor" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__nenhum__">Sem setor</SelectItem>
+                    {[...setores].sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR")).map((st) => (
+                      <SelectItem key={st.id} value={st.nome}>{st.nome}</SelectItem>
+                    ))}
+                    {form.setor && !setores.some((st) => st.nome === form.setor) && (
+                      <SelectItem value={form.setor}>{form.setor}</SelectItem>
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
               {campo("tipo_item", "Tipo de item")}
               <div className="space-y-1.5">
                 <Label>Status</Label>
