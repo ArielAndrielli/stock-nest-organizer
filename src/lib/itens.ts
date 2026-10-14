@@ -318,6 +318,22 @@ export function useDeleteItem() {
   });
 }
 
+export function useAtribuirSetor() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ ids, setor }: { ids: string[]; setor: string | null }) => {
+      for (let i = 0; i < ids.length; i += 200) {
+        const { error } = await sb.from("itens").update({ setor }).in("id", ids.slice(i, i + 200));
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["itens"] });
+      qc.invalidateQueries({ queryKey: ["kpis-estoque"] });
+    },
+  });
+}
+
 export function useSaveItem() {
   const qc = useQueryClient();
   return useMutation({
