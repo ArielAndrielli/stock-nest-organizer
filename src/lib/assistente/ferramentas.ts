@@ -73,7 +73,7 @@ export const ferramentas = {
       materiais: z.array(
         z.object({
           referencia: z.string(),
-          tipo_material: z.enum(["cartao", "embalagem", "etiqueta", "adesivo", "materia_prima", "caixa", "outro"]),
+          tipo_material: z.enum(["cartao", "embalagem", "etiqueta", "adesivo", "materia_prima", "caixa"]),
           quantidade: z.number(),
         }),
       ),
