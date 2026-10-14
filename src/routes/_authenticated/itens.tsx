@@ -53,6 +53,9 @@ import { ImportarExcel } from "@/components/itens/ImportarExcel";
 import { ItemForm } from "@/components/itens/ItemForm";
 import { StatusBadge } from "@/components/itens/StatusBadge";
 import { ExportarDialog } from "@/components/itens/ExportarDialog";
+import { AtribuirSetorDialog } from "@/components/itens/AtribuirSetorDialog";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Tags } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -155,6 +158,23 @@ function ItensPage() {
   const totalFiltrado = data?.total ?? 0;
   const paginas = Math.max(1, Math.ceil(totalFiltrado / porPagina));
   const filtrosAtivos = Object.values(filtros).filter(Boolean).length;
+  const [selecionados, setSelecionados] = useState<Set<string>>(new Set());
+  const [openSetor, setOpenSetor] = useState(false);
+  const todosPagina = rows.length > 0 && rows.every((r) => selecionados.has(r.id));
+  const algunsPagina = rows.some((r) => selecionados.has(r.id));
+  const alternarSel = (id: string) =>
+    setSelecionados((s) => {
+      const n = new Set(s);
+      if (n.has(id)) n.delete(id);
+      else n.add(id);
+      return n;
+    });
+  const alternarPagina = () =>
+    setSelecionados((s) => {
+      const n = new Set(s);
+      rows.forEach((r) => (todosPagina ? n.delete(r.id) : n.add(r.id)));
+      return n;
+    });
 
   const aplicarBusca = (valor: string) => {
     setBusca(valor);
@@ -308,6 +328,20 @@ function ItensPage() {
           )}
         </div>
 
+        {canEdit && selecionados.size > 0 && (
+          <div className="flex flex-wrap items-center gap-3 rounded-lg border bg-muted/50 px-4 py-2">
+            <span className="text-sm font-medium">
+              {selecionados.size} {selecionados.size === 1 ? "item selecionado" : "itens selecionados"}
+            </span>
+            <Button size="sm" className="gap-2" onClick={() => setOpenSetor(true)}>
+              <Tags className="h-4 w-4" /> Atribuir setor
+            </Button>
+            <Button size="sm" variant="ghost" onClick={() => setSelecionados(new Set())}>
+              Limpar seleção
+            </Button>
+          </div>
+        )}
+
         {isError ? (
           <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed p-12 text-center">
             <p className="text-sm text-muted-foreground">Não foi possível carregar os itens.</p>
@@ -342,6 +376,15 @@ function ItensPage() {
             <table className="w-full min-w-max text-sm">
               <thead className="sticky top-0 z-10 bg-muted/80 backdrop-blur">
                 <tr>
+                  {canEdit && (
+                    <th className="w-10 p-3">
+                      <Checkbox
+                        checked={todosPagina ? true : algunsPagina ? "indeterminate" : false}
+                        onCheckedChange={alternarPagina}
+                        aria-label="Selecionar todos da página"
+                      />
+                    </th>
+                  )}
                   {colunas.map((c) => (
                     <th key={c.chave} className="whitespace-nowrap p-3 text-left font-medium">
                       <button
@@ -365,6 +408,15 @@ function ItensPage() {
                     className="cursor-pointer transition-colors hover:bg-muted/50"
                     onClick={() => setDetalhe(item)}
                   >
+                    {canEdit && (
+                      <td className="w-10 p-3" onClick={(e) => e.stopPropagation()}>
+                        <Checkbox
+                          checked={selecionados.has(item.id)}
+                          onCheckedChange={() => alternarSel(item.id)}
+                          aria-label="Selecionar item"
+                        />
+                      </td>
+                    )}
                     {colunas.map((c) => (
                       <td key={c.chave} className="max-w-xs truncate p-3">
                         {c.chave === "imagem_url" && item.imagem_url ? (
@@ -504,6 +556,12 @@ function ItensPage() {
         onConcluir={() => refetch()}
       />
       <ItemForm open={openNovo} onOpenChange={setOpenNovo} campos={campos} onConcluir={() => refetch()} />
+      <AtribuirSetorDialog
+        ids={[...selecionados]}
+        open={openSetor}
+        onOpenChange={setOpenSetor}
+        onConcluir={() => setSelecionados(new Set())}
+      />
 
 
       <AlertDialog open={!!excluir} onOpenChange={(v) => !v && setExcluir(null)}>
