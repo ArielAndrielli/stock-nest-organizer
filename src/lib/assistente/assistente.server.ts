@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { convertToModelMessages, type UIMessage } from "ai";
 import { createResponsesCall } from "./responses.server";
+import { ferramentas } from "./ferramentas";
 
 const MODELO = "openai/gpt-6-astra";
 const GATEWAY = "https://ai.gateway.lovable.dev/v1";
@@ -135,7 +136,9 @@ export async function handleAssistente(request: Request) {
 
   const instrucoes = `Você é o assistente de estoque da empresa. Responda sempre em português do Brasil.
 Use APENAS os dados em JSON abaixo (instantâneo atual do sistema). Não invente números; se faltar informação, diga o que falta e como cadastrá-la.
-Responda de forma objetiva, com markdown, e termine com uma seção "Ações recomendadas" contendo 2 a 5 passos práticos.
+Responda de forma objetiva, com markdown. Para análises, termine com "Ações recomendadas" (2 a 5 passos). Para relatórios, use tabelas markdown.
+Data/hora atual: ${new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" })} (horário de Brasília).
+AÇÕES: quando o usuário pedir para criar ou alterar algo (compromisso, setor, item, ordem de produção, alterar itens), chame a ferramenta correspondente. Ela NÃO grava sozinha: o usuário verá um cartão de confirmação. Não diga que já foi feito antes do resultado da ferramenta. Após o resultado, resuma em uma frase. Se faltar informação essencial, pergunte antes. Use nomes de setores existentes.
 
 DADOS:
 ${JSON.stringify(contexto)}`;
@@ -145,6 +148,7 @@ ${JSON.stringify(contexto)}`;
     { baseURL: GATEWAY, apiKey, model: MODELO },
     await convertToModelMessages(messages),
     instrucoes,
+    ferramentas,
   );
   return response();
 }
