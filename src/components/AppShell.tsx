@@ -12,6 +12,7 @@ import { useAuth, useMyRole } from "@/hooks/use-auth";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { AssistenteFlutuante } from "@/components/assistente/AssistenteFlutuante";
 
 function GlobalSearch() {
   const navigate = useNavigate();
@@ -138,6 +139,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             </div>
           </header>
           <main className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 sm:py-8 animate-fade-in">{children}</main>
+          <AssistenteFlutuante />
         </div>
       </div>
     </SidebarProvider>
