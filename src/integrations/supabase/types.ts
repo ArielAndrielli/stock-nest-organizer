@@ -329,6 +329,8 @@ export type Database = {
           prateleira: string | null
           preco_venda: number | null
           referencia: string | null
+          saldo_atual: number
+          saldo_conhecido: boolean
           setor: string | null
           status: string | null
           tipo_item: string | null
@@ -353,6 +355,8 @@ export type Database = {
           prateleira?: string | null
           preco_venda?: number | null
           referencia?: string | null
+          saldo_atual?: number
+          saldo_conhecido?: boolean
           setor?: string | null
           status?: string | null
           tipo_item?: string | null
@@ -377,6 +381,8 @@ export type Database = {
           prateleira?: string | null
           preco_venda?: number | null
           referencia?: string | null
+          saldo_atual?: number
+          saldo_conhecido?: boolean
           setor?: string | null
           status?: string | null
           tipo_item?: string | null
@@ -434,6 +440,219 @@ export type Database = {
             columns: ["vaga_origem_id"]
             isOneToOne: false
             referencedRelation: "vagas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      movimentacoes_estoque: {
+        Row: {
+          criado_em: string
+          custo_unitario: number | null
+          id: string
+          item_id: string
+          linha_id: string | null
+          nota_id: string | null
+          observacao: string | null
+          quantidade: number
+          saldo_anterior: number
+          saldo_anterior_conhecido: boolean
+          saldo_posterior: number
+          tipo: string
+          usuario_id: string | null
+        }
+        Insert: {
+          criado_em?: string
+          custo_unitario?: number | null
+          id?: string
+          item_id: string
+          linha_id?: string | null
+          nota_id?: string | null
+          observacao?: string | null
+          quantidade: number
+          saldo_anterior: number
+          saldo_anterior_conhecido: boolean
+          saldo_posterior: number
+          tipo: string
+          usuario_id?: string | null
+        }
+        Update: {
+          criado_em?: string
+          custo_unitario?: number | null
+          id?: string
+          item_id?: string
+          linha_id?: string | null
+          nota_id?: string | null
+          observacao?: string | null
+          quantidade?: number
+          saldo_anterior?: number
+          saldo_anterior_conhecido?: boolean
+          saldo_posterior?: number
+          tipo?: string
+          usuario_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "movimentacoes_estoque_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "itens"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "movimentacoes_estoque_linha_id_fkey"
+            columns: ["linha_id"]
+            isOneToOne: true
+            referencedRelation: "notas_entrada_linhas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "movimentacoes_estoque_nota_id_fkey"
+            columns: ["nota_id"]
+            isOneToOne: false
+            referencedRelation: "notas_entrada"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notas_entrada: {
+        Row: {
+          atualizado_em: string
+          chave_acesso: string | null
+          confirmado_em: string | null
+          confirmado_por: string | null
+          criado_em: string
+          criado_por: string | null
+          data_emissao: string | null
+          emit_documento: string | null
+          emit_ie: string | null
+          emit_nome_fantasia: string | null
+          emit_razao_social: string | null
+          emit_telefone: string | null
+          emit_uf: string | null
+          fornecedor_id: string | null
+          id: string
+          numero: string | null
+          origem: string
+          serie: string | null
+          status: string
+          valor_total: number | null
+        }
+        Insert: {
+          atualizado_em?: string
+          chave_acesso?: string | null
+          confirmado_em?: string | null
+          confirmado_por?: string | null
+          criado_em?: string
+          criado_por?: string | null
+          data_emissao?: string | null
+          emit_documento?: string | null
+          emit_ie?: string | null
+          emit_nome_fantasia?: string | null
+          emit_razao_social?: string | null
+          emit_telefone?: string | null
+          emit_uf?: string | null
+          fornecedor_id?: string | null
+          id?: string
+          numero?: string | null
+          origem?: string
+          serie?: string | null
+          status?: string
+          valor_total?: number | null
+        }
+        Update: {
+          atualizado_em?: string
+          chave_acesso?: string | null
+          confirmado_em?: string | null
+          confirmado_por?: string | null
+          criado_em?: string
+          criado_por?: string | null
+          data_emissao?: string | null
+          emit_documento?: string | null
+          emit_ie?: string | null
+          emit_nome_fantasia?: string | null
+          emit_razao_social?: string | null
+          emit_telefone?: string | null
+          emit_uf?: string | null
+          fornecedor_id?: string | null
+          id?: string
+          numero?: string | null
+          origem?: string
+          serie?: string | null
+          status?: string
+          valor_total?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notas_entrada_fornecedor_id_fkey"
+            columns: ["fornecedor_id"]
+            isOneToOne: false
+            referencedRelation: "fornecedores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notas_entrada_linhas: {
+        Row: {
+          codigo_produto: string | null
+          criado_em: string
+          descricao: string
+          ean: string | null
+          fator: number
+          id: string
+          item_id: string | null
+          ncm: string | null
+          nota_id: string
+          ordem: number
+          quantidade: number
+          unidade: string | null
+          valor_total: number | null
+          valor_unitario: number | null
+        }
+        Insert: {
+          codigo_produto?: string | null
+          criado_em?: string
+          descricao?: string
+          ean?: string | null
+          fator?: number
+          id?: string
+          item_id?: string | null
+          ncm?: string | null
+          nota_id: string
+          ordem?: number
+          quantidade?: number
+          unidade?: string | null
+          valor_total?: number | null
+          valor_unitario?: number | null
+        }
+        Update: {
+          codigo_produto?: string | null
+          criado_em?: string
+          descricao?: string
+          ean?: string | null
+          fator?: number
+          id?: string
+          item_id?: string | null
+          ncm?: string | null
+          nota_id?: string
+          ordem?: number
+          quantidade?: number
+          unidade?: string | null
+          valor_total?: number | null
+          valor_unitario?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notas_entrada_linhas_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "itens"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notas_entrada_linhas_nota_id_fkey"
+            columns: ["nota_id"]
+            isOneToOne: false
+            referencedRelation: "notas_entrada"
             referencedColumns: ["id"]
           },
         ]
@@ -643,7 +862,12 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      confirmar_nota_entrada: { Args: { _nota_id: string }; Returns: Json }
       current_email: { Args: never; Returns: string }
+      definir_saldo_inicial: {
+        Args: { _item_id: string; _observacao: string; _saldo: number }
+        Returns: undefined
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

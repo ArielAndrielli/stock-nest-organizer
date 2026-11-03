@@ -8,3 +8,4 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+- Stock balance changes only through DB functions (confirmar_nota_entrada, definir_saldo_inicial); a trigger blocks direct edits to itens.saldo_atual — keeps every balance change audited in movimentacoes_estoque.
