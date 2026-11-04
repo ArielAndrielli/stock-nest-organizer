@@ -128,6 +128,22 @@ function PreEntradaPage() {
     } finally { setOcupado(false); }
   };
 
+  const [resultadoSefaz, setResultadoSefaz] = useState<string | null>(null);
+  const importarSefaz = async () => {
+    setOcupado(true); setResultadoSefaz(null);
+    try {
+      const r = await consultarSefaz();
+      let criados = 0, existentes = 0, falhas = 0;
+      const resumos = r.docs.filter((d) => d.tipo === "resumo").length;
+      for (const d of r.docs.filter((d) => d.tipo === "nfe_completa")) {
+        try { await criarRascunho(lerXmlNfe(d.xml), "sefaz"); criados++; }
+        catch (e) { if ((e as { notaId?: string }).notaId) existentes++; else falhas++; }
+      }
+      invalidar();
+      setResultadoSefaz(`SEFAZ: ${r.cStat ?? "?"} – ${r.xMotivo ?? ""}\nRascunhos criados: ${criados}\nJá existentes: ${existentes}\nSó resumo (aguardando manifestação): ${resumos}${falhas ? `\nNão lidas: ${falhas}` : ""}`);
+    } catch (e) { setResultadoSefaz(msg(e)); } finally { setOcupado(false); }
+  };
+
   const buscarChave = async () => {
     if (chave.length !== 44) return toast.error("A chave de acesso precisa ter 44 dígitos");
     setOcupado(true);
@@ -345,13 +361,17 @@ function PreEntradaPage() {
       <Dialog open={sefazAberto} onOpenChange={setSefazAberto}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Consulta à SEFAZ indisponível</DialogTitle>
+            <DialogTitle>Importar notas destinadas (SEFAZ)</DialogTitle>
             <DialogDescription>
-              O sistema ainda não tem integração nem certificado digital autorizado para baixar notas da SEFAZ. Nenhuma consulta foi feita.
-              Para dar entrada, baixe o XML da nota (portal da SEFAZ, e-mail do fornecedor ou seu emissor) e use “Importar XML da NF-e”. Pela chave de acesso é possível abrir um rascunho já importado.
+              Busca as notas emitidas para a empresa pelo servidor intermediário com o certificado digital. Cada nota completa vira um rascunho para revisão; o estoque não é alterado.
+              Notas que chegam só como resumo precisam da manifestação do destinatário antes de o XML completo ficar disponível.
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter><Button onClick={() => setSefazAberto(false)}>Entendi</Button></DialogFooter>
+          {resultadoSefaz && <p className="whitespace-pre-line text-sm">{resultadoSefaz}</p>}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setSefazAberto(false)}>Fechar</Button>
+            <Button onClick={importarSefaz} disabled={ocupado}>{ocupado && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Consultar agora</Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 
