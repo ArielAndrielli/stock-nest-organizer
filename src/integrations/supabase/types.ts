@@ -774,6 +774,36 @@ export type Database = {
         }
         Relationships: []
       }
+      sefaz_distribuicao: {
+        Row: {
+          atualizado_em: string
+          bloqueado_ate: string | null
+          id: number
+          max_nsu: string | null
+          ult_nsu: string
+          ultimo_cstat: string | null
+          ultimo_motivo: string | null
+        }
+        Insert: {
+          atualizado_em?: string
+          bloqueado_ate?: string | null
+          id?: number
+          max_nsu?: string | null
+          ult_nsu?: string
+          ultimo_cstat?: string | null
+          ultimo_motivo?: string | null
+        }
+        Update: {
+          atualizado_em?: string
+          bloqueado_ate?: string | null
+          id?: number
+          max_nsu?: string | null
+          ult_nsu?: string
+          ultimo_cstat?: string | null
+          ultimo_motivo?: string | null
+        }
+        Relationships: []
+      }
       setores: {
         Row: {
           criado_em: string

@@ -98,7 +98,7 @@ export async function fornecedorPorDocumento(doc: string | null): Promise<string
 }
 
 /** Cria o rascunho com os dados reais do XML. Não altera estoque. */
-export async function criarRascunho(lida: NfeLida): Promise<string> {
+export async function criarRascunho(lida: NfeLida, origem: "xml" | "sefaz" = "xml"): Promise<string> {
   const c = lida.cabecalho;
   if (c.chave_acesso) {
     const existente = await notaPorChave(c.chave_acesso);
@@ -111,7 +111,7 @@ export async function criarRascunho(lida: NfeLida): Promise<string> {
   const fornecedor_id = await fornecedorPorDocumento(c.emit_documento);
   const { data: nota, error } = await sb
     .from("notas_entrada")
-    .insert({ ...c, fornecedor_id, origem: "xml" })
+    .insert({ ...c, fornecedor_id, origem })
     .select("id")
     .single();
   if (error) throw error;
