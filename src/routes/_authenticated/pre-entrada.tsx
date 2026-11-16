@@ -1,3 +1,4 @@
+import { consultarSefaz } from "@/lib/sefaz.functions";
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { AlertTriangle, CheckCircle2, CloudOff, FileUp, Info, Link2, Loader2, PackagePlus, ScanLine, Search, Trash2, Truck } from "lucide-react";
